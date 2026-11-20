@@ -1,0 +1,60 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/home/index",
+    "pages/dynamics/index",
+    "pages/tools/index",
+    "pages/profile/index",
+    "pages/tool/index",
+    "pages/work/index",
+    "pages/post/index",
+    "pages/publish/index",
+    "pages/menu/index",
+    "pages/menu/detail",
+    "pages/students/index",
+    "pages/review/index",
+    "pages/finance/index",
+    "pages/meal-expenses/index",
+    "pages/register/index",
+    "pages/camera/index"
+  ],
+  "window": {
+    "backgroundColor": "#f4f7ee",
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#f4f7ee",
+    "navigationBarTitleText": "托管中心",
+    "navigationBarTextStyle": "black"
+  },
+  "usingComponents": {
+    "mmw-date-picker": "/components/mmw-date-picker/index",
+    "mmw-photos": "/components/mmw-photos/index",
+    "page-banner-ad": "/components/page-banner-ad/index"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#4d6255",
+    "selectedColor": "#205a40",
+    "backgroundColor": "#fffdf8",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "我的孩子"
+      },
+      {
+        "pagePath": "pages/dynamics/index",
+        "text": "托管动态"
+      },
+      {
+        "pagePath": "pages/tools/index",
+        "text": "实用工具"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "sitemapLocation": "sitemap.json",
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

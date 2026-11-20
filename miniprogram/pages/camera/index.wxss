@@ -1,0 +1,155 @@
+.capture-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.capture-stage {
+  position: relative;
+  flex: none;
+  width: min(calc(100% - var(--gutter) - var(--gutter)), 45vh, 410px);
+  margin: 12px auto 10px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #16251e;
+}
+
+.capture-stage::before {
+  display: block;
+  padding-top: 133.3333%;
+  content: '';
+}
+
+.capture-camera,
+.capture-status {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.capture-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22rpx;
+  padding: 26rpx;
+  color: #f4f7ee;
+  text-align: center;
+}
+
+.capture-gallery {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 0;
+  flex-direction: column;
+  margin: 0 var(--gutter);
+}
+
+.capture-heading {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0 8px;
+  font-weight: 680;
+}
+
+.capture-content {
+  width: 100%;
+  height: 0;
+  flex: 1 1 0;
+}
+
+.capture-thumbnails {
+  padding-bottom: 10px;
+}
+
+.capture-count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 550;
+}
+
+.capture-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr);
+  align-items: center;
+  flex: none;
+  gap: 12px;
+  padding: 9px var(--gutter) 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.capture-control {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.capture-side {
+  justify-self: center;
+  width: 100%;
+  max-width: 112px;
+  min-height: 48px;
+  padding: 0 4px;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+
+.capture-cancel {
+  border: 1px solid var(--line);
+  background: var(--field);
+}
+
+.capture-confirm {
+  background: var(--accent);
+  color: #fff;
+}
+
+.capture-shutter {
+  width: 64px;
+  height: 64px;
+  padding: 5px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+}
+
+.capture-shutter-face {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--lime);
+  color: var(--ink);
+}
+
+.capture-control--disabled {
+  opacity: .54;
+}
+
+.capture-control--pressed:not(.capture-control--disabled) {
+  opacity: .8;
+}
+
+@media (max-height: 560px) {
+  .capture-stage {
+    max-width: 40vh;
+    margin-top: 8px;
+    margin-bottom: 6px;
+  }
+}

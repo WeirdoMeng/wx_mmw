@@ -1,0 +1,154 @@
+<import src="../publish/form.wxml" />
+<import src="../menu/table.wxml" />
+<view class="dynamics-page mmw-safe-bottom">
+  <view class="dynamics-header" style="padding-top: {{topInset}}px">
+    <view class="dynamics-brand" style="height: {{menuHeight}}px; padding-right: {{menuWidth}}px">
+      <view class="mmw-mark" aria-hidden="true">
+        <image src="/images/ui/feed.png" mode="aspectFit" />
+      </view>
+      <text>{{organizationName}}</text>
+    </view>
+    <view class="dynamics-heading dynamics-heading--{{type}}">
+      <view class="dynamics-leaf" aria-hidden="true" />
+      <text class="dynamics-title" aria-role="heading">托管动态</text>
+      <button
+        wx:if="{{authorized && canEditMenu && type !== 'menu'}}"
+        class="mmw-button mmw-button--lime publish-button"
+        bindtap="onPublish"
+      >
+        <image src="/images/ui/add.png" mode="aspectFit" aria-hidden="true" />
+        <text>发布动态</text>
+      </button>
+    </view>
+  </view>
+
+  <view class="dynamics-content">
+    <view wx:if="{{authorized}}" class="category-switch" aria-role="tablist" aria-label="动态类别">
+      <button
+        wx:for="{{types}}"
+        wx:key="key"
+        class="category-tab {{item.key === type ? 'category-tab--selected' : ''}}"
+        aria-role="tab"
+        aria-selected="{{item.key === type}}"
+        data-type="{{item.key}}"
+        bindtap="onTypeTap"
+      >
+        <image src="/images/ui/{{item.icon}}.png" mode="aspectFit" aria-hidden="true" />
+        <text>{{item.label}}</text>
+      </button>
+    </view>
+
+    <view wx:if="{{authorized && type === 'menu'}}" class="week-content">
+      <view class="week-picker">
+        <button class="week-arrow" data-offset="-1" bindtap="onMoveWeek" aria-label="上一周">
+          <image src="/images/ui/back.png" mode="aspectFit" aria-hidden="true" />
+        </button>
+        <mmw-date-picker class="week-date-picker" value="{{week.start}}" bind:change="onChooseMenuDate" label="查看所在周的菜谱">
+          <view class="week-date">
+            <image src="/images/ui/calendar.png" mode="aspectFit" aria-hidden="true" />
+            <text>{{week.label}}</text>
+          </view>
+        </mmw-date-picker>
+        <button class="week-arrow" data-offset="1" bindtap="onMoveWeek" aria-label="下一周">
+          <image src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" />
+        </button>
+      </view>
+
+      <view wx:if="{{menuLoading || menuError}}" class="week-status" aria-live="polite">
+        <text class="feed-message">{{menuLoading ? '正在加载菜谱' : menuError}}</text>
+        <button wx:if="{{!menuLoading}}" class="mmw-button mmw-button--white feed-action" bindtap="onRetry">重试</button>
+      </view>
+
+      <block wx:else>
+        <view class="week-card mmw-surface">
+          <view class="week-card-heading">
+            <text class="week-card-title">工作日菜谱</text>
+            <button
+              wx:if="{{canEditMenu}}"
+              class="week-edit mmw-button mmw-button--primary"
+              bindtap="onEditMenu"
+            ><image src="/images/ui/edit.png" mode="aspectFit" aria-hidden="true" />{{hasMenu ? '编辑菜谱' : '填写菜谱'}}</button>
+          </view>
+          <template is="weekTable" data="{{weekRows, dishes}}" />
+          <text wx:if="{{!hasMenu}}" class="week-empty">这周还没有菜谱</text>
+          <button wx:else class="week-view mmw-button mmw-button--white" bindtap="onOpenMenuDetail">
+            <image src="/images/ui/document.png" mode="aspectFit" aria-hidden="true" />查看与分享
+          </button>
+        </view>
+
+        <view wx:if="{{menuPhotos.length}}" class="week-image-card mmw-surface">
+          <text class="week-card-title">菜谱图片</text>
+          <view class="week-photo-area">
+            <mmw-photos items="{{menuPhotos}}" retryable full-width-single bind:preview="onPreviewMenuImage" />
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view wx:if="{{authorized && type !== 'menu' && items.length}}" class="post-list">
+      <button
+        wx:for="{{items}}"
+        wx:key="id"
+        class="post-card post-card--{{type}} {{item.photoCount ? 'post-card--has-cover' : ''}}"
+        aria-label="{{item.title}}，查看详情"
+        data-id="{{item.id}}"
+        bindtap="onOpenPost"
+        hover-class="post-card--pressed"
+      >
+        <view wx:if="{{item.photoCount}}" class="post-media">
+          <image wx:if="{{item.cover}}" class="post-cover" src="{{item.cover}}" mode="aspectFill" lazy-load
+            aria-hidden="true" data-id="{{item.id}}" data-url="{{item.cover}}" binderror="onCoverError" />
+          <view wx:else class="post-media-placeholder" aria-hidden="true">
+            <image src="/images/ui/image-off.png" mode="aspectFit" />
+            <text>照片暂不可用</text>
+          </view>
+          <text wx:if="{{item.photoCount > 1}}" class="post-photo-count">{{item.photoCount}} 张</text>
+        </view>
+        <view class="post-copy">
+          <text class="post-date">{{item.dateText}}</text>
+          <text class="post-title">{{item.title}}</text>
+          <text wx:if="{{item.note}}" class="post-snippet">{{item.note}}</text>
+        </view>
+        <view class="post-arrow" aria-hidden="true"><image src="/images/ui/next.png" mode="aspectFit" /></view>
+      </button>
+    </view>
+
+    <view wx:if="{{(!authorized || type !== 'menu') && (loading || error || (loaded && !items.length) || nextCursor)}}" class="feed-footer">
+      <text wx:if="{{loading}}" class="feed-message">正在加载动态</text>
+      <block wx:elif="{{error}}">
+        <text class="feed-message">{{error}}</text>
+        <button class="mmw-button mmw-button--white feed-action" bindtap="onRetry">重试</button>
+      </block>
+      <view wx:elif="{{loaded && !items.length}}" class="feed-empty feed-empty--{{type}}">
+        <view class="feed-emblem" aria-hidden="true">
+          <image src="{{type === 'meal' ? '/images/ui/meal.png' : '/images/ui/daily.png'}}" mode="aspectFit" />
+        </view>
+        <text class="feed-message">还没有{{type === 'meal' ? '餐食' : '日常'}}动态</text>
+      </view>
+      <button wx:elif="{{nextCursor}}" class="mmw-button mmw-button--white feed-action" bindtap="onLoadMore">加载更多</button>
+    </view>
+  </view>
+</view>
+<view wx:if="{{authorized && role === 'teacher' && publishForm}}" class="publish-backdrop">
+  <view class="publish-sheet" aria-role="dialog" aria-label="发布动态">
+    <view class="publish-heading">
+      <text>发布动态</text>
+      <button class="publish-close" bindtap="onClosePublish" aria-label="关闭" disabled="{{publishing}}">
+        <image src="/images/ui/close.png" mode="aspectFit" />
+      </button>
+    </view>
+    <view class="publish-type-tabs" aria-role="tablist" aria-label="动态类型">
+      <button wx:for="{{publishTypes}}" wx:key="*this"
+        class="publish-type-tab {{publishForm.typeIndex === index ? 'publish-type-tab--active' : ''}}"
+        aria-role="tab" aria-selected="{{publishForm.typeIndex === index}}"
+        data-index="{{index}}" bindtap="onPublishTypeTab" disabled="{{publishing}}"
+        hover-class="publish-type-tab--pressed">
+        <image src="{{index === 0 ? '/images/ui/meal.png' : '/images/ui/daily.png'}}" mode="aspectFit" aria-hidden="true" />
+        <text>{{item}}</text>
+      </button>
+    </view>
+    <scroll-view class="publish-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+      <template is="publishForm" data="{{publishForm, maxPublishPhotos, publishing, publishError, hideTypePicker: true}}" />
+    </scroll-view>
+  </view>
+</view>

@@ -1,0 +1,348 @@
+@import "./fields.wxss";
+
+.profile-page {
+  min-height: 100vh;
+  max-width: 630px;
+  margin: 0 auto;
+}
+
+.profile-header {
+  padding-inline: 28rpx;
+}
+
+.profile-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  min-width: 0;
+  padding-left: 6rpx;
+}
+
+.profile-toolbar .mmw-mark {
+  flex: 0 0 48rpx;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 17rpx;
+  background: var(--tint);
+}
+
+.profile-toolbar image {
+  width: 26rpx;
+  height: 26rpx;
+}
+
+.profile-brand {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 26rpx;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-heading {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 17rpx;
+  min-height: 213rpx;
+  margin-top: 21rpx;
+  padding: 26rpx 41rpx;
+  overflow: hidden;
+  border-radius: 41rpx 44rpx 22rpx 42rpx;
+  color: #fffdf8;
+  background: var(--stage, #123d30);
+  box-shadow: 0 10rpx 24rpx rgba(18, 61, 48, .1);
+}
+
+.profile-heading::before,
+.profile-heading::after {
+  position: absolute;
+  z-index: -1;
+  right: -74rpx;
+  bottom: -138rpx;
+  width: 355rpx;
+  height: 355rpx;
+  border: 2rpx solid rgba(221, 242, 143, .24);
+  border-radius: 47% 53% 39% 61%;
+  content: '';
+  transform: rotate(-25deg);
+  pointer-events: none;
+}
+
+.profile-heading::after {
+  right: -116rpx;
+  bottom: -116rpx;
+  transform: rotate(24deg);
+}
+
+.profile-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13rpx;
+}
+
+.profile-title {
+  color: inherit;
+  font-family: 'Songti SC', 'Noto Serif CJK SC', serif;
+  font-size: 72rpx;
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.profile-role {
+  padding: 5rpx 16rpx;
+  border: 1rpx solid rgba(229, 241, 211, .34);
+  border-radius: 44rpx;
+  color: #f4f7ee;
+  background: rgba(233, 255, 201, .13);
+  font-size: 24rpx;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.profile-stamp {
+  display: grid;
+  place-items: center;
+  width: 121rpx;
+  height: 121rpx;
+  margin-right: 13rpx;
+  border: 7rpx solid rgba(255, 253, 248, .5);
+  border-radius: 44% 56% 52% 48%;
+  background: var(--warm);
+  transform: rotate(8deg);
+}
+
+.profile-header--teacher .profile-stamp {
+  background: var(--lime, #ddf28f);
+}
+
+.profile-stamp image {
+  width: 58rpx;
+  height: 58rpx;
+  transform: rotate(-8deg);
+}
+
+.profile-content {
+  padding: 25rpx 28rpx 28rpx;
+}
+
+.profile-group,
+.profile-message {
+  overflow: hidden;
+  border-radius: 33rpx;
+  background: var(--surface);
+  box-shadow: 0 8rpx 21rpx rgba(18, 61, 48, .06);
+}
+
+.profile-group--organizations {
+  margin-top: 19rpx;
+}
+
+.profile-children .profile-group + .profile-group {
+  margin-top: 24rpx;
+}
+
+.profile-pagination {
+  display: grid;
+  justify-items: center;
+  gap: 12rpx;
+  padding: 18rpx 0;
+  text-align: center;
+}
+
+.profile-pagination-error {
+  color: var(--danger);
+  font-size: 26rpx;
+}
+
+.profile-edit-student {
+  display: block;
+  margin-bottom: 24rpx;
+  color: var(--muted);
+  font-size: 27rpx;
+  line-height: 1.4;
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  width: 100%;
+  min-height: 88rpx;
+  margin: 0;
+  padding: 14rpx 27rpx;
+  color: var(--ink);
+  font-size: 28rpx;
+  line-height: 1.45;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.profile-row + .profile-row {
+  border-top: 1rpx solid var(--line);
+}
+
+.profile-row--heading {
+  min-height: 110rpx;
+  background: var(--tint);
+}
+
+.profile-file {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  min-width: 0;
+}
+
+.profile-file-icon,
+.profile-menu-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 66rpx;
+  width: 66rpx;
+  height: 66rpx;
+  border-radius: 22rpx;
+  background: var(--tint);
+}
+
+.profile-file-icon {
+  background: var(--surface);
+}
+
+.profile-file-icon image,
+.profile-menu-icon image {
+  width: 33rpx;
+  height: 33rpx;
+}
+
+.profile-group-title,
+.profile-item-title {
+  color: inherit;
+  font-weight: 730;
+}
+
+.profile-group-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.profile-value {
+  max-width: 61%;
+  color: var(--muted);
+  font-size: 27rpx;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.profile-group .profile-edit {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8rpx;
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 8rpx 19rpx;
+  border-radius: 58rpx;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 4rpx 0 rgba(32, 90, 64, .13);
+  font-size: 25rpx;
+  font-weight: 720;
+}
+
+.profile-edit image {
+  width: 27rpx;
+  height: 27rpx;
+}
+
+.profile-menu {
+  justify-content: flex-start;
+  gap: 17rpx;
+  min-height: 103rpx;
+  border-radius: 0;
+}
+
+.profile-item-title {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+}
+
+.profile-arrow {
+  width: 29rpx;
+  height: 29rpx;
+  opacity: .78;
+}
+
+.profile-shortcuts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 17rpx;
+}
+
+.profile-shortcuts .profile-shortcut {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  gap: 15rpx;
+  width: 100%;
+  min-height: 114rpx;
+  overflow: hidden;
+  padding: 18rpx;
+  border-radius: 28rpx;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 7rpx 15rpx rgba(18, 61, 48, .06);
+  font-size: 28rpx;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.profile-shortcut-arrow {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 45rpx;
+  height: 45rpx;
+  border-radius: 50%;
+  background: rgba(255, 253, 248, .72);
+}
+
+.profile-shortcuts .profile-shortcut--pressed {
+  transform: translateY(2rpx);
+  opacity: .87;
+}
+
+.profile-message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18rpx;
+  margin-bottom: 16rpx;
+  padding: 35rpx 27rpx;
+  color: var(--muted);
+  font-size: 27rpx;
+  overflow-wrap: anywhere;
+}
+
+.profile-org-list .profile-menu {
+  min-height: 92rpx;
+  gap: 15rpx;
+  padding-inline: 14rpx;
+}
+
+.profile-org-list .profile-menu--current {
+  margin-top: 8rpx;
+  border-top: 0;
+  border-radius: 19rpx;
+  background: var(--tint);
+}

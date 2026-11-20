@@ -1,0 +1,34 @@
+<import src="./table.wxml" />
+<mmw-share-cover wx:if="{{shareRecord}}" record="{{shareRecord}}" bind:ready="onShareCoverReady" />
+
+<view class="menu-detail-page">
+  <view wx:if="{{loading || error}}" class="menu-detail-state mmw-surface">
+    <text aria-live="polite">{{loading ? '正在加载菜谱' : error}}</text>
+    <button wx:if="{{retryable}}" class="mmw-button mmw-button--white" bindtap="loadMenu">重试</button>
+    <button wx:elif="{{error}}" class="mmw-button mmw-button--white" bindtap="onBack">返回托管动态</button>
+  </view>
+
+  <block wx:else>
+    <view class="menu-detail-heading">
+      <view class="menu-detail-title-group">
+        <text class="menu-detail-title" aria-role="heading">每周菜谱</text>
+        <text wx:if="{{week}}" class="menu-detail-date">{{week.label}}</text>
+      </view>
+      <button wx:if="{{hasMenu && !singlePage}}" class="menu-detail-share mmw-button mmw-button--white"
+        open-type="share" aria-label="分享到微信聊天">
+        <image src="/images/ui/share.png" mode="aspectFit" aria-hidden="true" />分享
+      </button>
+    </view>
+
+    <view wx:if="{{singlePage}}" class="menu-detail-state mmw-surface"><text>完整菜谱仅对该机构成员可见</text></view>
+    <view wx:elif="{{!hasMenu}}" class="menu-detail-state mmw-surface"><text>这周还没有菜谱</text></view>
+    <view wx:else class="menu-detail-content mmw-surface">
+      <template is="weekTable" data="{{weekRows, dishes}}" />
+      <view wx:if="{{photos.length}}" class="menu-detail-photos">
+        <text class="menu-detail-gallery-title" aria-role="heading">菜谱图片</text>
+        <mmw-photos items="{{photos}}" full-width-single retryable bind:preview="onPreviewPhoto" />
+      </view>
+    </view>
+    <page-banner-ad wx:if="{{hasMenu && !singlePage}}" placement="weeklyMenu" />
+  </block>
+</view>

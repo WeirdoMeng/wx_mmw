@@ -1,0 +1,101 @@
+<view class="worksheet">
+  <view class="worksheet-card worksheet-settings">
+    <text class="worksheet-heading" aria-role="heading">出题设置</text>
+
+    <view class="worksheet-field">
+      <text class="worksheet-label">运算 <text class="worksheet-hint">可多选</text></text>
+      <view class="worksheet-operations">
+        <button wx:for="{{operations}}" wx:key="key"
+          class="worksheet-choice {{selected[item.key] ? 'worksheet-choice--selected' : ''}}"
+          data-key="{{item.key}}" bindtap="toggleOperation" aria-pressed="{{selected[item.key]}}">
+          <text class="worksheet-symbol" aria-hidden="true">{{item.symbol}}</text>
+          <text>{{item.label}}</text>
+        </button>
+      </view>
+    </view>
+
+    <view class="worksheet-field">
+      <text class="worksheet-label">题目形式</text>
+      <view class="worksheet-formats">
+        <button wx:for="{{formats}}" wx:key="key"
+          class="worksheet-choice {{format === item.key ? 'worksheet-choice--selected' : ''}}"
+          data-format="{{item.key}}" bindtap="chooseFormat" aria-pressed="{{format === item.key}}">{{item.label}}</button>
+      </view>
+    </view>
+
+    <view class="worksheet-columns">
+      <view class="worksheet-field">
+        <text class="worksheet-label">数值范围</text>
+        <picker mode="selector" range="{{rangeLabels}}" value="{{limitIndex}}" data-field="limitIndex"
+          aria-label="数值范围" bindchange="chooseOption">
+          <view class="worksheet-control">
+            <text>{{rangeLabels[limitIndex]}}</text>
+            <image src="/images/ui/expand.png" aria-hidden="true" />
+          </view>
+        </picker>
+      </view>
+      <view class="worksheet-field">
+        <text class="worksheet-label">题数</text>
+        <input class="worksheet-control worksheet-input" type="number" value="{{count}}" maxlength="3"
+          aria-label="题数" placeholder="1–100" bindinput="changeCount" />
+      </view>
+    </view>
+
+    <view class="worksheet-advanced">
+      <button class="worksheet-disclosure" bindtap="toggleAdvanced" aria-expanded="{{advancedOpen}}">
+        <text>更多设置</text>
+        <image src="/images/ui/{{advancedOpen ? 'collapse' : 'expand'}}.png" aria-hidden="true" />
+      </button>
+      <view wx:if="{{advancedOpen}}" class="worksheet-options">
+        <view wx:if="{{selected.add || selected.sub}}" class="worksheet-option">
+          <text>进位和退位</text>
+          <picker mode="selector" range="{{regroupOptions}}" range-key="label" value="{{regroupIndex}}"
+            data-field="regroupIndex" aria-label="进位和退位" bindchange="chooseOption">
+            <view class="worksheet-control worksheet-option-select">
+              <text>{{regroupOptions[regroupIndex].label}}</text>
+              <image src="/images/ui/expand.png" aria-hidden="true" />
+            </view>
+          </picker>
+        </view>
+        <view wx:if="{{selected.div}}" class="worksheet-option">
+          <text>除法结果</text>
+          <picker mode="selector" range="{{divisionOptions}}" range-key="label" value="{{divisionIndex}}"
+            data-field="divisionIndex" aria-label="除法结果" bindchange="chooseOption">
+            <view class="worksheet-control worksheet-option-select">
+              <text>{{divisionOptions[divisionIndex].label}}</text>
+              <image src="/images/ui/expand.png" aria-hidden="true" />
+            </view>
+          </picker>
+        </view>
+        <view class="worksheet-option">
+          <text>避免重复题</text>
+          <switch checked="{{unique}}" color="#205a40" aria-label="避免重复题" bindchange="changeUnique"/>
+        </view>
+        <view class="worksheet-option">
+          <text>PDF 附答案页</text>
+          <switch checked="{{includeKey}}" color="#205a40" aria-label="PDF 附答案页" bindchange="changeKey"/>
+        </view>
+      </view>
+    </view>
+
+    <text wx:if="{{error}}" class="worksheet-error" aria-live="polite">{{error}}</text>
+    <button class="worksheet-primary" bindtap="requestGenerate" loading="{{generating}}" disabled="{{generating || exporting}}">
+      {{dirty || !questions.length ? '生成题目' : '换一批题目'}}
+    </button>
+  </view>
+
+  <view class="worksheet-card worksheet-paper">
+    <view class="worksheet-paper-head">
+      <text class="worksheet-heading" aria-role="heading">PDF 预览</text>
+      <text wx:if="{{pdfDocumentId && !dirty}}" class="worksheet-hint">{{questions.length}} 道题</text>
+    </view>
+
+    <text wx:if="{{dirty}}" class="worksheet-notice">设置已修改，生成后查看新题目。</text>
+    <text wx:elif="{{notice}}" class="worksheet-notice" aria-live="polite">{{notice}}</text>
+
+    <button wx:if="{{pdfDocumentId && !dirty}}" class="worksheet-secondary" bindtap="exportPdf"
+      loading="{{exporting}}" disabled="{{generating || exporting}}">导出 A4 PDF</button>
+    <text wx:if="{{exportError}}" class="worksheet-error" aria-live="polite">{{exportError}}</text>
+    <pdf-page-preview wx:if="{{pdfDocumentId && !dirty}}" document-id="{{pdfDocumentId}}" />
+  </view>
+</view>

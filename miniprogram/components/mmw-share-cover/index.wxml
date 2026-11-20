@@ -1,0 +1,3 @@
+<view class="share-cover-workspace" aria-hidden="true">
+  <canvas id="share-cover-canvas" class="share-cover-canvas" type="2d" />
+</view>

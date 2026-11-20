@@ -1,0 +1,94 @@
+:host { display: block; width: 100%; }
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.photo-cell {
+  position: relative;
+  min-width: 0;
+  height: 0;
+  padding-bottom: 100%;
+  border-radius: 20rpx;
+  overflow: hidden;
+  background: var(--tint, #e5eedd);
+}
+
+.photo-frame,
+.photo-remove {
+  position: absolute;
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  line-height: 1.35;
+}
+
+.photo-frame {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 20rpx;
+}
+.photo-thumb { display: block; width: 100%; height: 100%; }
+
+.photo-grid--single { grid-template-columns: minmax(0, 1fr); }
+.photo-grid--single .photo-cell { height: auto; padding-bottom: 0; }
+.photo-grid--single .photo-visual { position: relative; height: auto; }
+.photo-grid--single .photo-thumb { height: auto; }
+.photo-grid--single .photo-fallback { min-height: 160rpx; }
+
+.photo-fallback,
+.photo-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  height: 100%;
+  color: var(--muted, #4d6255);
+  font-size: 22rpx;
+  text-align: center;
+}
+.photo-fallback image { width: 31rpx; height: 31rpx; opacity: .65; }
+.photo-cell--add { background: var(--field, #f2f6eb); }
+.photo-add {
+  border: 2rpx dashed var(--control-border, #91a88e);
+  color: var(--accent-dark, #123d30);
+  font-weight: 630;
+}
+.photo-add image { width: 40rpx; height: 40rpx; }
+
+.photo-remove {
+  top: 0;
+  right: 0;
+  display: flex;
+  width: 48px;
+  height: 48px;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 8rpx;
+  border-radius: 0;
+}
+.photo-remove-icon {
+  display: grid;
+  width: 46rpx;
+  height: 46rpx;
+  place-items: center;
+  border-radius: 50%;
+  background: #17392de0;
+}
+.photo-remove-icon image { width: 25rpx; height: 25rpx; filter: brightness(0) invert(1); }
+.photo-control--disabled { opacity: .6; }
+
+.photo-hit:focus-visible,
+.photo-add:focus-visible,
+.photo-remove:focus-visible {
+  outline: 3rpx solid var(--accent, #205a40);
+  outline-offset: -4rpx;
+}

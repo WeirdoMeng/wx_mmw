@@ -1,0 +1,74 @@
+<view class="work-page">
+  <view class="work-nav" style="height: {{navHeight}}px; padding-top: {{statusBar}}px;">
+    <button class="work-back" bindtap="goBack" aria-label="返回">
+      <image src="/images/ui/back.png" mode="aspectFit" />
+    </button>
+    <text class="work-nav-title">{{navTitle}}</text>
+  </view>
+
+  <view class="work-content">
+    <view wx:if="{{loading}}" class="mmw-surface work-message">正在加载作业记录…</view>
+    <view wx:elif="{{needsBinding}}" class="mmw-surface work-message work-message--stack">
+      <text>绑定孩子后即可查看与你关联的作业记录。</text>
+      <button class="mmw-button mmw-button--primary work-button" bindtap="openEntry">返回小程序首页</button>
+    </view>
+    <view wx:elif="{{error}}" class="mmw-surface work-message work-message--stack">
+      <text>{{error}}</text>
+      <button wx:if="{{retryable}}" class="mmw-button mmw-button--white work-button" bindtap="loadDetail">重试</button>
+    </view>
+    <block wx:else>
+      <view class="work-summary">
+        <view>
+          <view class="work-title">{{dateLabel}}</view>
+          <text wx:if="{{studentName}}" class="work-meta">{{studentName}}{{kind === 'work' ? ' · 家长提交' : ''}}</text>
+        </view>
+        <view wx:if="{{kind === 'feedback' && feedback}}" class="work-badge {{feedback.status === 'done' ? '' : 'work-badge--pending'}}">
+          <image wx:if="{{feedback.status === 'done'}}" src="/images/ui/check.png" mode="aspectFit" />
+          <text>{{feedback.status === 'done' ? '已完成' : '未完成'}}</text>
+        </view>
+        <view wx:else class="work-stamp" aria-hidden="true"><image src="/images/ui/calendar.png" mode="aspectFit" /></view>
+      </view>
+
+      <block wx:if="{{kind === 'feedback'}}">
+        <view wx:if="{{feedback && (feedback.note || feedback.images.length)}}" class="mmw-surface work-record">
+          <view wx:if="{{feedback.note}}" class="work-copy">
+            <text selectable>{{feedback.note}}</text>
+          </view>
+          <view wx:if="{{feedback.images.length}}" class="work-section">
+            <view class="work-section-head">
+              <text class="work-heading">完成照片</text><text class="work-meta">{{feedback.images.length}} 张</text>
+            </view>
+            <mmw-photos items="{{feedback.images}}" retryable disabled="{{previewing}}" bind:preview="previewPhoto" />
+          </view>
+        </view>
+        <view wx:elif="{{!feedback}}" class="mmw-surface work-message">
+          <image src="/images/ui/message.png" mode="aspectFit" /><text>当天暂无老师反馈</text>
+        </view>
+      </block>
+      <block wx:else>
+        <view wx:if="{{!assignments.length}}" class="mmw-surface work-message">
+          <image src="/images/ui/empty.png" mode="aspectFit" /><text>这一天还没有上传作业</text>
+        </view>
+        <block wx:for="{{assignments}}" wx:for-item="assignment" wx:for-index="assignmentIndex" wx:key="id">
+          <view wx:if="{{assignment.note || assignment.images.length}}" class="mmw-surface work-record">
+            <view wx:if="{{assignment.note}}" class="work-copy"><text selectable>{{assignment.note}}</text></view>
+            <view wx:if="{{assignment.images.length}}" class="work-section">
+              <view class="work-section-head">
+                <text class="work-heading">作业照片</text><text class="work-meta">{{assignment.images.length}} 张</text>
+              </view>
+              <mmw-photos items="{{assignment.images}}" retryable disabled="{{previewing}}" data-assignment="{{assignmentIndex}}"
+                bind:preview="previewPhoto" />
+            </view>
+          </view>
+        </block>
+        <view wx:if="{{hasMore}}" class="work-pagination">
+          <text wx:if="{{moreError}}" class="work-meta" aria-live="polite">{{moreError}}</text>
+          <button class="mmw-button mmw-button--white work-button" disabled="{{loadingMore || previewing}}" loading="{{loadingMore}}" bindtap="loadMoreAssignments">
+            {{moreError ? '重试' : '加载更多'}}
+          </button>
+        </view>
+      </block>
+      <page-banner-ad wx:if="{{kind === 'feedback' ? feedback : assignments.length}}" placement="work" />
+    </block>
+  </view>
+</view>

@@ -1,0 +1,6 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "实用工具",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}

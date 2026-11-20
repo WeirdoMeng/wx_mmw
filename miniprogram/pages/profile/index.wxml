@@ -1,0 +1,157 @@
+<import src="./fields.wxml" />
+<view class="profile-page mmw-safe-bottom">
+  <view class="profile-header profile-header--{{role}}" style="padding-top: {{topInset}}px">
+    <view class="profile-toolbar" style="height: {{menuHeight}}px; padding-right: {{menuWidth}}px">
+      <view class="mmw-mark"><image src="/images/ui/school.png" mode="aspectFit" aria-hidden="true" /></view>
+      <text class="profile-brand">{{organizationName}}</text>
+    </view>
+    <view class="profile-heading">
+      <view class="profile-identity">
+        <text class="profile-title">我的</text>
+        <text wx:if="{{!loading && role}}" class="profile-role">{{role === 'teacher' ? '教师' : '家长'}}</text>
+      </view>
+      <view class="profile-stamp" aria-hidden="true"><image src="/images/ui/profile.png" mode="aspectFit" /></view>
+    </view>
+  </view>
+
+  <view class="profile-content">
+    <view wx:if="{{loading || error}}" class="profile-message">
+      <text aria-live="polite">{{error || '正在加载资料'}}</text>
+      <button wx:if="{{error}}" class="mmw-button mmw-button--white" bindtap="onShow">重试</button>
+    </view>
+    <view wx:elif="{{role === 'parent'}}" class="profile-children">
+      <view wx:for="{{children}}" wx:for-item="child" wx:key="id" class="profile-group">
+        <view class="profile-row profile-row--heading">
+          <view class="profile-file">
+            <view class="profile-file-icon"><image src="/images/ui/child.png" mode="aspectFit" aria-hidden="true" /></view>
+            <text class="profile-group-title">{{child.name}}</text>
+          </view>
+          <button class="profile-edit" bindtap="onEdit" data-id="{{child.id}}" aria-label="编辑{{child.name}}的资料">
+            <image src="/images/ui/edit.png" mode="aspectFit" aria-hidden="true" />
+            <text>编辑资料</text>
+          </button>
+        </view>
+        <view wx:for="{{child.rows}}" wx:key="key" class="profile-row">
+          <text>{{item.label}}</text>
+          <text class="profile-value">{{item.value}}</text>
+        </view>
+      </view>
+      <view wx:if="{{!children.length}}" class="profile-message">
+        <text aria-live="polite">{{childrenLoading ? '正在加载孩子资料' : (childrenError || '暂无孩子资料')}}</text>
+        <button wx:if="{{childrenError}}" class="mmw-button mmw-button--white" bindtap="onRetryChildren">重试</button>
+      </view>
+      <view wx:elif="{{childrenHasMore}}" class="profile-pagination">
+        <text wx:if="{{childrenError}}" aria-live="polite" class="profile-pagination-error">{{childrenError}}</text>
+        <button class="mmw-button mmw-button--white" bindtap="onLoadMoreChildren" loading="{{childrenLoading}}" disabled="{{childrenLoading}}">
+          {{childrenError ? '重试加载' : '加载更多孩子'}}
+        </button>
+      </view>
+    </view>
+    <view wx:elif="{{role === 'teacher'}}" class="profile-shortcuts">
+      <view wx:if="{{teacher && (teacher.name || teacher.phone)}}" class="profile-group">
+        <view wx:if="{{teacher.name}}" class="profile-row">
+          <text>教师姓名</text><text class="profile-value">{{teacher.name}}</text>
+        </view>
+        <view wx:if="{{teacher.phone}}" class="profile-row">
+          <text>联系电话</text><text class="profile-value">{{teacher.phone}}</text>
+        </view>
+      </view>
+      <button class="profile-shortcut profile-shortcut--students" bindtap="onOpenStudents" hover-class="profile-shortcut--pressed">
+        <view class="profile-menu-icon"><image src="/images/ui/people.png" mode="aspectFit" aria-hidden="true" /></view>
+        <text class="profile-item-title">我的学生</text>
+        <view class="profile-shortcut-arrow"><image class="profile-arrow" src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" /></view>
+      </button>
+      <button wx:if="{{teacher.canReviewEnrollment === true}}" class="profile-shortcut" bindtap="onOpenReview" hover-class="profile-shortcut--pressed">
+        <view class="profile-menu-icon"><image src="/images/ui/review.png" mode="aspectFit" aria-hidden="true" /></view>
+        <text class="profile-item-title">审核</text>
+        <view class="profile-shortcut-arrow"><image class="profile-arrow" src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" /></view>
+      </button>
+      <button wx:if="{{teacher.canManageFinance === true}}" class="profile-shortcut" bindtap="onOpenFinance" hover-class="profile-shortcut--pressed">
+        <view class="profile-menu-icon"><image src="/images/ui/document.png" mode="aspectFit" aria-hidden="true" /></view>
+        <text class="profile-item-title">财务管理</text>
+        <view class="profile-shortcut-arrow"><image class="profile-arrow" src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" /></view>
+      </button>
+      <button wx:if="{{teacher.canManageMealExpenses === true}}" class="profile-shortcut" bindtap="onOpenMealExpenses" hover-class="profile-shortcut--pressed">
+        <view class="profile-menu-icon"><image src="/images/ui/meal.png" mode="aspectFit" aria-hidden="true" /></view>
+        <text class="profile-item-title">餐食费用</text>
+        <view class="profile-shortcut-arrow"><image class="profile-arrow" src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" /></view>
+      </button>
+    </view>
+    <view wx:if="{{!loading && !error && role === 'parent'}}" class="profile-group profile-group--organizations">
+      <button class="profile-row profile-menu" bindtap="onAddChild">
+        <view class="profile-menu-icon"><image src="/images/ui/add-person.png" mode="aspectFit" aria-hidden="true" /></view>
+        <text class="profile-item-title">添加孩子</text>
+        <image class="profile-arrow" src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" />
+      </button>
+    </view>
+    <view wx:if="{{!loading && !error && organizationsTotal > 1}}" class="profile-group profile-group--organizations">
+      <button class="profile-row profile-menu" bindtap="onChooseOrganization">
+        <view class="profile-menu-icon"><image src="/images/ui/organization.png" mode="aspectFit" aria-hidden="true" /></view>
+        <text class="profile-item-title">切换机构</text>
+        <image class="profile-arrow" src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" />
+      </button>
+    </view>
+    <view wx:elif="{{!loading && !error && organizationError}}" class="profile-message">
+      <text>{{organizationError}}</text>
+      <button class="mmw-button mmw-button--white" bindtap="onRetryOrganizations">重新加载机构</button>
+    </view>
+    <page-banner-ad wx:if="{{!loading && !error && organizationId && (role === 'teacher' || (role === 'parent' && children.length))}}"
+      placement="profile" blocked="{{editing || choosingOrganization}}" />
+  </view>
+</view>
+
+<view wx:if="{{!loading && !error && choosingOrganization}}" class="student-sheet-mask">
+  <view class="student-sheet" aria-role="dialog" aria-label="切换机构">
+    <view class="student-sheet-header">
+      <text>切换机构</text>
+      <button class="student-sheet-close" bindtap="onCloseOrganizations" disabled="{{switchingOrganization}}" aria-label="关闭">
+        <image src="/images/ui/close.png" mode="aspectFit" />
+      </button>
+    </view>
+    <scroll-view class="student-sheet-scroll" style="height: {{organizations.length * 103 + (organizationsHasMore ? 144 : 84)}}rpx"
+      scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="student-sheet-content profile-org-list">
+        <button wx:for="{{organizations}}" wx:key="id" class="profile-row profile-menu {{item.id === organizationId ? 'profile-menu--current' : ''}}" data-id="{{item.id}}" bindtap="onSelectOrganization" disabled="{{switchingOrganization}}">
+          <text class="profile-item-title">{{item.name}}</text>
+          <text wx:if="{{item.id === organizationId}}" class="profile-value">当前机构</text>
+          <image wx:else class="profile-arrow" src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" />
+        </button>
+        <text wx:if="{{switchingOrganization}}" class="profile-value" aria-live="polite">正在切换机构…</text>
+        <text wx:if="{{switchError}}" class="student-sheet-error" aria-live="polite">{{switchError}}</text>
+        <view wx:if="{{organizationsHasMore}}" class="profile-pagination">
+          <text wx:if="{{organizationError}}" class="profile-pagination-error" aria-live="polite">{{organizationError}}</text>
+          <button class="mmw-button mmw-button--white" bindtap="onLoadMoreOrganizations" loading="{{organizationsLoading}}"
+            disabled="{{organizationsLoading || switchingOrganization}}">
+            {{organizationError ? '重试加载' : '加载更多机构'}}
+          </button>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<view wx:if="{{!loading && !error && editing}}" class="student-sheet-mask">
+  <view class="student-sheet" aria-role="dialog" aria-label="编辑资料">
+    <view class="student-sheet-header">
+      <text>编辑资料</text>
+      <button class="student-sheet-close" bindtap="onCloseEdit" aria-label="关闭" disabled="{{saving}}">
+        <image src="/images/ui/close.png" mode="aspectFit" />
+      </button>
+    </view>
+    <scroll-view class="student-sheet-scroll student-sheet-scroll--form" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="student-sheet-content">
+        <text class="profile-edit-student">{{editingStudentName}}</text>
+        <view class="student-editor-section">
+          <text class="student-editor-heading">孩子资料</text>
+          <template is="studentFields" data="{{fields: childFields, form, saving, grades, gradeIndex}}" />
+        </view>
+        <view class="student-editor-section">
+          <text class="student-editor-heading">家长联系</text>
+          <template is="studentFields" data="{{fields: parentFields, form, saving}}" />
+        </view>
+        <text wx:if="{{formError}}" class="student-sheet-error" aria-live="polite">{{formError}}</text>
+        <button class="mmw-button mmw-button--primary student-sheet-submit" bindtap="onSave" loading="{{saving}}" disabled="{{saving}}">保存资料</button>
+      </view>
+    </scroll-view>
+  </view>
+</view>

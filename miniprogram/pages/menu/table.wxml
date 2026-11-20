@@ -1,0 +1,17 @@
+<template name="weekTable">
+  <view class="week-table">
+    <view class="week-row week-row--head">
+      <text>日期</text>
+      <text wx:for="{{dishes}}" wx:key="key" class="week-cell">{{item.label}}</text>
+    </view>
+    <view wx:for="{{weekRows}}" wx:for-item="day" wx:key="key" class="week-row">
+      <view class="week-day">
+        <text class="week-day-label">{{day.label}}</text>
+        <text class="week-day-date">{{day.shortDate}}</text>
+      </view>
+      <text wx:for="{{dishes}}" wx:for-item="dish" wx:key="key"
+        class="week-cell {{day[dish.key] ? '' : 'week-cell--empty'}}"
+        aria-label="{{day.label}}{{dish.label}}，{{day[dish.key] || '未填写'}}">{{day[dish.key] || '—'}}</text>
+    </view>
+  </view>
+</template>

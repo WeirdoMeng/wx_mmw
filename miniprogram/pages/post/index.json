@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "托管动态",
+  "navigationBarBackgroundColor": "#F4F7EE",
+  "navigationBarTextStyle": "black",
+  "usingComponents": {
+    "mmw-share-cover": "/components/mmw-share-cover/index"
+  }
+}

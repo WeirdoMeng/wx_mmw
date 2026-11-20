@@ -1,0 +1,41 @@
+<view class="calendar-card {{disabled ? 'calendar-card--disabled' : ''}}" aria-label="作业日历">
+  <view class="calendar-head">
+    <view class="calendar-month">
+      <text>{{month}} 月</text><text class="calendar-year">{{year}}</text>
+    </view>
+    <view class="calendar-actions">
+      <button class="calendar-control calendar-today" disabled="{{disabled}}" bindtap="selectToday"><text>今天</text></button>
+      <button class="calendar-control calendar-move" disabled="{{disabled}}" bindtap="shift" data-offset="-1" aria-label="{{expanded ? '上一月' : '上一周'}}">
+        <image class="calendar-icon" src="/images/ui/back.png" mode="aspectFit" />
+      </button>
+      <button class="calendar-control calendar-move" disabled="{{disabled}}" bindtap="shift" data-offset="1" aria-label="{{expanded ? '下一月' : '下一周'}}">
+        <image class="calendar-icon" src="/images/ui/next.png" mode="aspectFit" />
+      </button>
+    </view>
+  </view>
+  <view class="calendar-week">
+    <text class="calendar-weekday" wx:for="{{weekdays}}" wx:key="*this">{{item}}</text>
+  </view>
+  <view class="calendar-grid">
+    <button wx:for="{{days}}" wx:key="key" class="calendar-control calendar-day" disabled="{{disabled}}" data-date="{{item.key}}" bindtap="selectDay"
+      aria-label="{{item.label + (item.mark === 'feedback' ? '，老师已提交反馈' : item.mark === 'assignment' ? '，家长已上传作业' : '')}}" aria-pressed="{{item.selected}}">
+      <text class="calendar-number {{item.outside ? 'calendar-number--outside' : ''}} {{item.today ? 'calendar-number--today' : ''}} {{item.selected ? 'calendar-number--selected' : ''}}">{{item.number}}</text>
+      <view wx:if="{{item.mark}}" class="calendar-mark-dot calendar-day-dot calendar-mark-dot--{{item.mark}}" aria-hidden="true" />
+    </button>
+  </view>
+  <button class="calendar-control calendar-toggle" disabled="{{disabled}}" bindtap="toggle" aria-expanded="{{expanded}}">
+    <image class="calendar-toggle-icon" src="{{expanded ? '/images/ui/collapse.png' : '/images/ui/expand.png'}}" mode="aspectFit" />
+    <text>{{expanded ? '收起月历' : '展开月历'}}</text>
+  </button>
+  <view class="calendar-legend" aria-label="日历标记说明">
+    <view class="calendar-legend-item">
+      <view class="calendar-mark-dot calendar-mark-dot--assignment" aria-hidden="true" />
+      <text>已上传作业</text>
+    </view>
+    <view class="calendar-legend-item">
+      <view class="calendar-mark-dot calendar-mark-dot--feedback" aria-hidden="true" />
+      <text>已提交反馈</text>
+    </view>
+    <text>无标记表示暂无提交</text>
+  </view>
+</view>

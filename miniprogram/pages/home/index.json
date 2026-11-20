@@ -1,0 +1,9 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "托管中心",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "mmw-calendar": "/components/mmw-calendar/index",
+    "mmw-share-cover": "/components/mmw-share-cover/index"
+  }
+}

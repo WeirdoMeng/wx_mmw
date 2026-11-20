@@ -1,0 +1,36 @@
+<view class="capture-page">
+  <view class="capture-stage">
+    <camera wx:if="{{active}}" class="capture-camera" mode="normal" device-position="back" flash="auto"
+      data-camera-generation="{{cameraGeneration}}" bindinitdone="onCameraReady" binderror="onCameraError" bindstop="onCameraStop" />
+    <view wx:else class="capture-status">
+      <text aria-role="status">{{error || '正在打开相机…'}}</text>
+      <button wx:if="{{permissionDenied}}" class="mmw-button mmw-button--white" bindtap="onOpenSettings">相机设置</button>
+      <button wx:elif="{{error}}" class="mmw-button mmw-button--white" bindtap="startCamera">重新打开</button>
+    </view>
+  </view>
+
+  <view class="capture-gallery">
+    <view class="capture-heading">
+      <text>已拍照片</text>
+      <text class="capture-count" aria-live="polite">{{photos.length}} / {{limit}}</text>
+    </view>
+    <scroll-view class="capture-content" scroll-y show-scrollbar="{{false}}">
+      <view wx:if="{{photos.length}}" class="capture-thumbnails">
+        <mmw-photos items="{{photos}}" editable limit="{{0}}" disabled="{{capturing || closing}}"
+          bind:remove="removePhoto" bind:preview="previewPhoto" />
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="capture-actions" aria-label="拍照操作">
+    <view class="capture-control capture-side capture-cancel {{closing ? 'capture-control--disabled' : ''}}"
+      bindtap="cancel" aria-role="button" aria-disabled="{{closing}}" hover-class="capture-control--pressed">取消</view>
+    <view class="capture-control capture-shutter {{!ready || capturing || closing || photos.length >= limit ? 'capture-control--disabled' : ''}}"
+      bindtap="takePhoto" aria-role="button" aria-label="拍照"
+      aria-disabled="{{!ready || capturing || closing || photos.length >= limit}}" hover-class="capture-control--pressed">
+      <view class="capture-shutter-face">{{capturing ? '拍摄中' : '拍照'}}</view>
+    </view>
+    <view class="capture-control capture-side capture-confirm {{capturing || closing || !photos.length ? 'capture-control--disabled' : ''}}"
+      bindtap="usePhotos" aria-role="button" aria-disabled="{{capturing || closing || !photos.length}}" hover-class="capture-control--pressed">使用照片</view>
+  </view>
+</view>

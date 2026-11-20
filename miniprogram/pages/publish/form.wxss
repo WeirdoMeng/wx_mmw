@@ -1,0 +1,100 @@
+.publish-form {
+  display: flex;
+  flex-direction: column;
+  gap: 23rpx;
+  padding: 27rpx var(--gutter) 37rpx;
+}
+.compose-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9rpx;
+  min-width: 0;
+}
+.compose-date-row {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: 16rpx;
+}
+.compose-label {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.compose-control,
+.compose-input,
+.compose-textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 12px;
+  border: 1rpx solid var(--line);
+  border-radius: 26rpx;
+  color: var(--ink);
+  background: var(--field);
+  font-size: 15px;
+}
+.compose-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6rpx;
+  border-radius: 999rpx;
+  background: var(--tint);
+}
+.compose-control text {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.compose-arrow {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+}
+.compose-textarea {
+  height: 108px;
+  line-height: 1.5;
+}
+.compose-input:focus,
+.compose-textarea:focus {
+  border-color: var(--accent);
+}
+.compose-placeholder,
+.compose-photo-count {
+  color: var(--muted);
+  font-size: 14px;
+}
+.compose-field--photos {
+  padding: 19rpx;
+  border-radius: 31rpx 31rpx 31rpx 16rpx;
+  background: var(--canvas);
+}
+.compose-photos-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12rpx;
+}
+.compose-error {
+  padding: 10px;
+  border-radius: 18rpx;
+  color: var(--danger);
+  background: var(--danger-bg);
+  font-size: 14px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.publish-form .compose-submit {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 380px;
+  min-height: 48px;
+  margin: 5rpx auto 0;
+  border-radius: 999rpx;
+  text-align: center;
+}
+.compose-submit image {
+  width: 16px;
+  height: 16px;
+}

@@ -1,0 +1,104 @@
+<template name="guardianContact">
+  <view class="contact-row">
+    <text>家长姓名</text>
+    <text class="contact-value">{{contact.guardianName || '—'}}</text>
+  </view>
+  <view class="contact-row">
+    <text>与孩子关系</text>
+    <text class="contact-value">{{contact.relationship || '—'}}</text>
+  </view>
+  <view wx:if="{{contact.contact1}}" class="contact-row contact-row--phone">
+    <text>联系电话 1</text>
+    <view class="contact-phone">
+      <text class="contact-value" selectable>{{contact.contact1}}</text>
+      <button wx:if="{{contact.dial1}}" class="contact-call" data-number="{{contact.dial1}}" bindtap="onDialContact"
+        aria-label="拨打联系电话 1"><image src="/images/ui/phone.png" mode="aspectFit" aria-hidden="true" /></button>
+    </view>
+  </view>
+  <view wx:if="{{contact.contact2}}" class="contact-row contact-row--phone">
+    <text>联系电话 2</text>
+    <view class="contact-phone">
+      <text class="contact-value" selectable>{{contact.contact2}}</text>
+      <button wx:if="{{contact.dial2}}" class="contact-call" data-number="{{contact.dial2}}" bindtap="onDialContact"
+        aria-label="拨打联系电话 2"><image src="/images/ui/phone.png" mode="aspectFit" aria-hidden="true" /></button>
+    </view>
+  </view>
+</template>
+<view class="students-page">
+  <view class="students-tools">
+    <view class="student-search">
+      <view class="student-search-icon"><image src="/images/ui/search.png" mode="aspectFit" aria-hidden="true" /></view>
+      <input aria-label="搜索学生姓名" placeholder="搜索学生姓名" placeholder-class="student-placeholder" value="{{query}}" bindinput="onSearch" maxlength="60" />
+    </view>
+    <text wx:if="{{!loading && !error && students.length}}" class="students-count" aria-live="polite">{{query ? '找到 ' : '共 '}}{{studentsTotal}} 名学生</text>
+  </view>
+
+  <view wx:if="{{!loading && !error && studentsHasMore}}" class="students-pagination">
+    <text wx:if="{{studentsMoreError}}" class="student-sheet-error">{{studentsMoreError}}</text>
+    <button class="mmw-button mmw-button--white" disabled="{{studentsMoreLoading}}" loading="{{studentsMoreLoading}}" bindtap="onLoadMoreStudents">
+      {{studentsMoreError ? '重试' : '加载更多'}}
+    </button>
+  </view>
+
+  <view wx:if="{{!loading && !error}}" wx:for="{{students}}" wx:key="id" class="manager-card {{index % 2 ? 'manager-card--alternate' : ''}}">
+    <view class="manager-person">
+      <view class="manager-avatar" aria-hidden="true">{{item.initial}}</view>
+      <view class="manager-info">
+        <text class="manager-name">{{item.name}}</text>
+        <text wx:if="{{item.school || item.grade}}" class="manager-grade">{{item.school}}{{item.school && item.grade ? ' · ' : ''}}{{item.grade}}</text>
+      </view>
+    </view>
+    <view class="manager-actions">
+      <button class="mmw-button manager-button manager-button--contact" data-id="{{item.id}}" bindtap="onOpenStudent">
+        <image src="/images/ui/people.png" mode="aspectFit" aria-hidden="true" />
+        <text>家长信息</text>
+      </button>
+    </view>
+  </view>
+
+  <view wx:if="{{loading || error || !students.length}}" class="students-message">
+    <text aria-live="polite">{{loading ? '正在加载学生' : (error || (query ? '没有找到学生' : '暂无学生'))}}</text>
+    <button wx:if="{{!loading && error}}" class="mmw-button mmw-button--white manager-button" bindtap="loadStudents">重试</button>
+  </view>
+</view>
+
+<view wx:if="{{!loading && !error && activeId}}" class="student-sheet-mask">
+  <view class="student-sheet" aria-role="dialog" aria-label="家长信息">
+    <view class="student-sheet-header">
+      <text>家长信息</text>
+      <button class="student-sheet-close" bindtap="onCloseStudent" aria-label="关闭">
+        <image src="/images/ui/close.png" mode="aspectFit" aria-hidden="true" />
+      </button>
+    </view>
+    <scroll-view class="student-sheet-scroll student-sheet-scroll--parents {{parents.length > 1 || (parents.length && fallbackContact) ? 'parents-scroll--multiple' : (parents.length || fallbackContact ? 'parents-scroll--one' : '')}}" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="student-sheet-content">
+        <text wx:if="{{detailLoading}}" class="students-message" aria-live="polite">正在加载资料</text>
+        <block wx:elif="{{!detailError}}">
+          <view class="contact-summary">
+            <text class="contact-student">{{activeName}}</text>
+            <text class="mmw-muted">{{parentsTotal ? '已绑定 ' + parentsTotal + ' 位家长' : '暂无已绑定家长'}}</text>
+          </view>
+          <view wx:for="{{parents}}" wx:key="key" class="contact-group">
+            <text class="contact-heading">家长 {{item.key + 1}}</text>
+            <template is="guardianContact" data="{{contact: item}}" />
+            <text wx:if="{{!item.contact1 && !item.contact2}}" class="contact-empty">未填写联系电话</text>
+          </view>
+          <view wx:if="{{fallbackContact}}" class="contact-group">
+            <text class="contact-heading">留存联系方式</text>
+            <template is="guardianContact" data="{{contact: fallbackContact}}" />
+          </view>
+          <view wx:if="{{parentsHasMore}}" class="students-pagination">
+            <text wx:if="{{parentsMoreError}}" class="student-sheet-error">{{parentsMoreError}}</text>
+            <button class="mmw-button mmw-button--white" disabled="{{parentsMoreLoading}}" loading="{{parentsMoreLoading}}" bindtap="onLoadMoreParents">
+              {{parentsMoreError ? '重试' : '加载更多'}}
+            </button>
+          </view>
+        </block>
+        <view wx:if="{{detailError}}" class="students-pagination">
+          <text class="student-sheet-error" aria-live="polite">{{detailError}}</text>
+          <button class="mmw-button mmw-button--white" bindtap="onRetryParents">重试</button>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

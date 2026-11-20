@@ -1,0 +1,4 @@
+<view wx:for="{{slots}}" wx:key="token" wx:for-item="slot"
+  class="page-banner {{slot.loaded ? 'page-banner--loaded' : ''}}" hidden="{{blocked || !allowed || slot.failed}}">
+  <ad-custom unit-id="{{slot.unitId}}" data-token="{{slot.token}}" bindload="onBannerLoad" binderror="onBannerError" />
+</view>

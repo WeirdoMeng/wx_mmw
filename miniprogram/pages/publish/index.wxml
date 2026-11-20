@@ -1,0 +1,12 @@
+<import src="./form.wxml" />
+
+<view class="post-editor">
+  <text wx:if="{{loading}}" class="editor-state">正在加载动态</text>
+  <view wx:elif="{{publishForm}}" class="mmw-surface">
+    <template is="publishForm" data="{{publishForm, publishTypes, maxPublishPhotos, publishing, publishError}}" />
+  </view>
+  <view wx:else class="editor-state">
+    <text>{{error}}</text>
+    <button class="mmw-button mmw-button--white editor-back" bindtap="onBack">返回详情</button>
+  </view>
+</view>

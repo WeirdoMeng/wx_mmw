@@ -1,0 +1,49 @@
+<view wx:if="{{singlePage}}" class="post-public">
+  <view class="public-card mmw-surface">
+    <view class="public-mark" aria-hidden="true"><image src="/images/ui/{{previewIcon}}.png" mode="aspectFit" /></view>
+    <text class="public-title" aria-role="heading">{{previewTitle}}</text>
+    <text class="public-note">动态正文和照片仅对该机构成员可见</text>
+  </view>
+</view>
+<view wx:elif="{{loading}}" class="post-message">
+  <text class="post-muted">正在加载动态</text>
+</view>
+<view wx:elif="{{post}}" class="post-detail post-detail--{{post.type}}">
+  <mmw-share-cover record="{{shareRecord}}" bind:ready="onShareCoverReady" />
+  <view class="post-article">
+    <view class="post-toolbar">
+      <view class="post-meta">
+        <text class="post-tag">{{category}}</text>
+        <text>{{post.date}}</text>
+      </view>
+      <view class="post-actions">
+        <button class="post-more" open-type="share" disabled="{{deleting}}" aria-label="分享到微信聊天">
+          <image src="/images/ui/share.png" mode="aspectFit" aria-hidden="true" />
+          <text>分享</text>
+        </button>
+        <button wx:if="{{canManage}}" class="post-more" bindtap="onPostActions" disabled="{{deleting}}" aria-label="动态操作">
+          <text>{{deleting ? '删除中' : '操作'}}</text>
+          <image src="/images/ui/more.png" mode="aspectFit" aria-hidden="true" />
+        </button>
+      </view>
+    </view>
+    <text class="detail-title" aria-role="heading">{{post.title}}</text>
+  </view>
+  <view wx:if="{{post.note || post.images.length}}" class="detail-content mmw-surface">
+    <text wx:if="{{post.note}}" class="detail-description">{{post.note}}</text>
+    <view wx:if="{{post.images.length}}" class="detail-gallery {{post.note ? 'detail-gallery--after-text' : ''}}">
+      <view class="gallery-heading">
+        <text class="gallery-title">{{category}}照片</text>
+        <text class="post-muted">{{post.images.length}} 张</text>
+      </view>
+      <mmw-photos items="{{post.images}}" retryable bind:preview="onPreview" />
+    </view>
+  </view>
+  <page-banner-ad wx:if="{{!error && (post.type === 'meal' || post.type === 'daily')}}"
+    placement="{{post.type === 'meal' ? 'mealPost' : 'dailyPost'}}" />
+</view>
+<view wx:else class="post-message">
+  <text class="post-muted">{{error}}</text>
+  <button wx:if="{{retryable}}" class="mmw-button mmw-button--white post-action" bindtap="loadPost">重试</button>
+  <button class="mmw-button post-action" bindtap="onStart">返回首页</button>
+</view>

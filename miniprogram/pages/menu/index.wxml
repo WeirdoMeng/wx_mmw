@@ -1,0 +1,71 @@
+<view class="menu-editor">
+  <view wx:if="{{loading || !authorized || !loaded}}" class="menu-state mmw-surface">
+    <text aria-role="status">{{loading ? '正在加载菜谱' : baseError}}</text>
+    <button wx:if="{{!loading && week}}" class="menu-retry mmw-button mmw-button--white" bindtap="onRetry">重试</button>
+  </view>
+
+  <form wx:else bindsubmit="onSave">
+    <view class="menu-fields mmw-surface">
+      <view class="menu-week-info">
+        <view class="menu-week-icon" aria-hidden="true"><image src="/images/ui/calendar.png" mode="aspectFit" /></view>
+        <text class="menu-week-range" aria-role="heading">{{week.label}}</text>
+      </view>
+      <view class="menu-days" aria-role="tablist" aria-label="选择要填写的日期">
+        <button
+          wx:for="{{week.days}}"
+          wx:key="key"
+          class="menu-day {{dayIndex === index ? 'menu-day--selected' : ''}}"
+          aria-role="tab"
+          aria-selected="{{dayIndex === index}}"
+          aria-label="{{item.label}}，{{item.shortDate}}"
+          data-index="{{index}}"
+          bindtap="onSelectDay"
+          disabled="{{saving}}"
+        >
+          <text>{{item.label}}</text>
+          <text class="menu-day-date">{{item.shortDate}}</text>
+        </button>
+      </view>
+
+      <view class="menu-dishes">
+        <view wx:for="{{dishes}}" wx:key="key" class="menu-field menu-field--{{item.key}}">
+          <text class="menu-field-label menu-dish-label">{{item.label}}</text>
+          <textarea
+            class="menu-input"
+            value="{{days[dayIndex][item.key]}}"
+            maxlength="{{maxDishLength}}"
+            aria-label="{{week.days[dayIndex].label}}{{item.label}}"
+            placeholder="填写{{item.label}}名称"
+            placeholder-class="menu-placeholder"
+            data-field="{{item.key}}"
+            bindinput="onDishInput"
+            disabled="{{saving}}"
+            cursor-spacing="18"
+          />
+        </view>
+      </view>
+    </view>
+
+    <view class="menu-photo mmw-surface">
+      <view class="menu-photo-heading">
+        <text class="menu-field-label">菜谱图片 <text class="menu-optional">选填</text></text>
+        <text class="menu-optional">{{photos.length}} / {{maxPhotos}}</text>
+      </view>
+      <view class="menu-photo-content">
+        <mmw-photos items="{{photos}}" editable limit="{{maxPhotos}}" retryable disabled="{{saving}}"
+          bind:add="onChooseImage" bind:remove="onRemoveImage" bind:preview="onPreviewImage" />
+      </view>
+    </view>
+
+    <view wx:if="{{saveError}}" class="menu-alert" aria-role="alert">
+      <text>{{saveError}}</text>
+      <button wx:if="{{conflict}}" class="menu-retry mmw-button mmw-button--white" bindtap="onReloadConflict">载入最新菜谱</button>
+    </view>
+    <button
+      class="menu-submit mmw-button mmw-button--primary"
+      form-type="submit"
+      disabled="{{saving || conflict}}"
+      loading="{{saving}}"
+    >{{saving ? '正在保存' : '保存整周菜谱'}}</button>
+  </form>
+</view>

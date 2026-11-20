@@ -1,0 +1,74 @@
+.week-table {
+  padding: 13rpx 13rpx 11rpx;
+}
+
+.week-row {
+  display: grid;
+  grid-template-columns: 49px repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  color: var(--ink);
+}
+
+.week-row + .week-row {
+  border-top: 1rpx solid var(--line);
+}
+
+.week-row--head {
+  align-items: center;
+  border-radius: 18rpx 18rpx 0 0;
+  background: var(--tint);
+  font-weight: 700;
+  text-align: center;
+}
+
+.week-row--head .week-cell {
+  font-size: 13px;
+}
+
+.week-row--head > text:first-child {
+  font-size: 12px;
+}
+
+.week-day,
+.week-cell {
+  min-width: 0;
+  padding: 10px 5px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.week-day {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  background: rgba(229, 238, 221, .51);
+  text-align: center;
+}
+
+.week-day-label {
+  font-weight: 700;
+}
+
+.week-day-date {
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.week-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1rpx solid var(--line);
+  text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.week-cell--empty {
+  color: var(--muted);
+  text-align: center;
+}

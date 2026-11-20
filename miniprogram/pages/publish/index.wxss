@@ -1,0 +1,21 @@
+@import "./form.wxss";
+
+.post-editor {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 24rpx var(--gutter) 24rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+}
+
+.editor-state {
+  display: block;
+  padding: 52rpx 16rpx;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.editor-state .editor-back {
+  max-width: 160px;
+  margin: 24rpx auto 0;
+}

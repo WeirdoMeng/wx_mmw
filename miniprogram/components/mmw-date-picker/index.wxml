@@ -1,0 +1,13 @@
+<button class="date-picker-trigger" aria-label="{{(label || (fields === 'month' ? '选择月份' : '选择日期')) + (value ? '，' + value : '')}}"
+  aria-expanded="{{open}}" disabled="{{disabled}}" catchtap="show" hover-class="date-picker-trigger--pressed">
+  <slot />
+</button>
+
+<block wx:if="{{open}}">
+  <root-portal wx:if="{{portalSupported}}">
+    <include src="./sheet.wxml" />
+  </root-portal>
+  <block wx:else>
+    <include src="./sheet.wxml" />
+  </block>
+</block>

@@ -1,0 +1,120 @@
+<view class="tool-page">
+  <view wx:if="{{loading || !authorized}}" class="tool-status" aria-live="polite">
+    <text>{{loading ? '正在打开工具…' : error}}</text>
+    <button wx:if="{{!loading && retry}}" class="tool-button tool-button--primary" bindtap="checkAccess">重试</button>
+    <button wx:elif="{{!loading}}" class="tool-button" bindtap="goBack">返回</button>
+  </view>
+
+  <block wx:else>
+    <view class="tool-heading">
+      <view class="tool-badge {{tool.iconUrl || tool.localIcon ? 'tool-badge--custom' : ''}}" aria-hidden="true">
+        <image wx:if="{{tool.iconUrl}}" class="tool-uploaded-icon" src="{{tool.iconUrl}}" mode="aspectFit"
+          data-icon-url="{{tool.iconUrl}}" binderror="onIconError" />
+        <image wx:elif="{{tool.localIcon}}" class="tool-uploaded-icon" src="{{tool.localIcon}}" mode="aspectFit" />
+        <image wx:else src="/images/ui/{{tool.icon}}.png" mode="aspectFit" />
+      </view>
+      <text class="tool-heading-name" aria-role="heading">{{tool.name}}</text>
+    </view>
+
+    <view wx:if="{{!tool.connected}}" class="tool-status" aria-live="polite">
+      <text>该工具功能暂未接入。</text>
+      <button class="tool-button" bindtap="goBack">返回</button>
+    </view>
+
+    <arithmetic-worksheet wx:elif="{{key === 'sst-make'}}" category-id="{{categoryId}}" />
+    <writing-worksheet wx:elif="{{tool.writingMode}}" worksheet-mode="{{tool.writingMode}}"
+      tool-key="{{key}}" category-id="{{categoryId}}" />
+
+    <view wx:elif="{{key === 'focus-timer'}}" class="tool-panel">
+      <view class="tool-timer">
+        <text class="tool-timer-value" aria-label="剩余时间 {{timerText}}">{{timerText}}</text>
+        <text class="tool-timer-label">{{running ? '计时中' : seconds === 0 ? '已结束' : '专注时长'}}</text>
+      </view>
+      <view class="tool-durations" aria-label="选择专注时长">
+        <button wx:for="{{durations}}" wx:key="*this" class="tool-choice {{minutes === item ? 'tool-choice--active' : ''}}"
+          disabled="{{running}}" bindtap="onDuration" data-minutes="{{item}}" aria-pressed="{{minutes === item}}">{{item}} 分钟</button>
+      </view>
+      <view class="tool-actions">
+        <button class="tool-button" bindtap="onTimerReset">重置</button>
+        <button class="tool-button tool-button--primary" bindtap="onTimerToggle">{{running ? '暂停' : seconds && seconds < minutes * 60 ? '继续' : '开始'}}</button>
+      </view>
+    </view>
+
+    <view wx:elif="{{key === 'unit-converter'}}" class="tool-panel">
+      <view class="tool-field">
+        <text>换算类型</text>
+        <picker mode="selector" range="{{unitTypes}}" value="{{unitType}}" bindchange="onUnitType" aria-label="换算类型">
+          <view class="tool-control">{{unitTypes[unitType]}}<image src="/images/ui/expand.png" aria-hidden="true" mode="aspectFit" /></view>
+        </picker>
+      </view>
+      <view class="tool-fields">
+        <view class="tool-field">
+          <text>原单位</text>
+          <picker mode="selector" range="{{unitOptions}}" range-key="name" value="{{from}}" data-field="from" bindchange="onUnit" aria-label="原单位">
+            <view class="tool-control">{{unitOptions[from].name}}<image src="/images/ui/expand.png" aria-hidden="true" mode="aspectFit" /></view>
+          </picker>
+        </view>
+        <view class="tool-field">
+          <text>目标单位</text>
+          <picker mode="selector" range="{{unitOptions}}" range-key="name" value="{{to}}" data-field="to" bindchange="onUnit" aria-label="目标单位">
+            <view class="tool-control">{{unitOptions[to].name}}<image src="/images/ui/expand.png" aria-hidden="true" mode="aspectFit" /></view>
+          </picker>
+        </view>
+      </view>
+      <view class="tool-field">
+        <text>数值</text>
+        <input class="tool-control tool-input" type="digit" value="{{amount}}" maxlength="24" placeholder="输入数值" aria-label="要换算的数值" bindinput="onAmount" />
+      </view>
+      <view class="tool-result" aria-live="polite">
+        <text class="tool-result-caption">换算结果</text>
+        <text class="tool-result-value" selectable>{{conversion || '—'}}</text>
+        <text wx:if="{{conversion}}" class="tool-result-caption">{{unitOptions[to].name}}</text>
+      </view>
+      <button class="tool-button tool-full" bindtap="onSwapUnits">互换单位</button>
+    </view>
+
+    <view wx:elif="{{key === 'date-calculator'}}" class="tool-panel">
+      <view class="tool-fields">
+        <view class="tool-field">
+          <text>开始日期</text>
+          <mmw-date-picker value="{{startDate}}" end="{{endDate}}" data-field="startDate" bind:change="onDate" label="开始日期">
+            <view class="tool-control"><text>{{startDate}}</text><image src="/images/ui/calendar.png" aria-hidden="true" mode="aspectFit" /></view>
+          </mmw-date-picker>
+        </view>
+        <view class="tool-field">
+          <text>结束日期</text>
+          <mmw-date-picker value="{{endDate}}" start="{{startDate}}" data-field="endDate" bind:change="onDate" label="结束日期">
+            <view class="tool-control"><text>{{endDate}}</text><image src="/images/ui/calendar.png" aria-hidden="true" mode="aspectFit" /></view>
+          </mmw-date-picker>
+        </view>
+      </view>
+      <view class="tool-result" aria-live="polite">
+        <text class="tool-result-caption">相隔天数</text>
+        <view><text class="tool-result-value">{{days}}</text><text class="tool-result-unit"> 天</text></view>
+        <text class="tool-result-caption">含首尾共 {{days + 1}} 天</text>
+      </view>
+    </view>
+
+    <view wx:elif="{{key === 'image-compressor'}}" class="tool-panel">
+      <button wx:if="{{photo}}" class="tool-photo" bindtap="onPreviewImage" aria-label="预览图片">
+        <image src="{{result.path || photo.path}}" mode="aspectFill" />
+        <text>{{result ? '压缩结果' : '原图'}} · {{result.label || photo.label}}</text>
+      </button>
+      <button class="tool-button tool-full" bindtap="onPickImage" disabled="{{working}}">{{photo ? '换一张图片' : '从相册选择图片'}}</button>
+      <block wx:if="{{photo}}">
+        <view class="tool-durations tool-quality" aria-label="压缩程度">
+          <button class="tool-choice {{quality === 75 ? 'tool-choice--active' : ''}}" aria-pressed="{{quality === 75}}" bindtap="onQuality" data-quality="75" disabled="{{working}}">标准</button>
+          <button class="tool-choice {{quality === 50 ? 'tool-choice--active' : ''}}" aria-pressed="{{quality === 50}}" bindtap="onQuality" data-quality="50" disabled="{{working}}">更小体积</button>
+        </view>
+        <view wx:if="{{result}}" class="tool-result" aria-live="polite">
+          <text class="tool-result-caption">原图 {{photo.label}} · 压缩后 {{result.label}}</text>
+          <text>{{result.smaller ? (result.savingPercent ? '体积减少 ' + result.savingPercent + '%' : '压缩完成') : '已采用原图'}}</text>
+        </view>
+        <button wx:if="{{result}}" class="tool-button tool-button--primary tool-full" bindtap="onSaveImage" disabled="{{working}}">保存到相册</button>
+        <button wx:else class="tool-button tool-button--primary tool-full" bindtap="onCompress" disabled="{{working}}">{{working ? '处理中…' : '开始压缩'}}</button>
+      </block>
+      <text wx:if="{{imageError}}" class="tool-error" aria-live="polite">{{imageError}}</text>
+    </view>
+    <page-banner-ad wx:if="{{tool.connected}}" placement="toolDetail" />
+  </block>
+</view>

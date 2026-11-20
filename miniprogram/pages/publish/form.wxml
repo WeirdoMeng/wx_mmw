@@ -1,0 +1,59 @@
+<template name="publishForm">
+  <view class="publish-form">
+    <view class="compose-field">
+      <text class="compose-label">标题</text>
+      <input class="compose-input" aria-label="标题" placeholder-class="compose-placeholder" placeholder="输入标题" value="{{publishForm.title}}" maxlength="60" disabled="{{publishing}}" data-field="title" bindinput="onPublishField" />
+    </view>
+
+    <view class="compose-date-row {{hideTypePicker ? 'compose-date-row--single' : ''}}">
+      <view wx:if="{{!hideTypePicker}}" class="compose-field">
+        <text class="compose-label">类型</text>
+        <picker mode="selector" range="{{publishTypes}}" value="{{publishForm.typeIndex}}" disabled="{{publishing}}" bindchange="onPublishType">
+          <view class="compose-control" aria-label="类型，{{publishTypes[publishForm.typeIndex]}}">
+            <text>{{publishTypes[publishForm.typeIndex]}}</text>
+            <image class="compose-arrow" src="/images/ui/expand.png" mode="aspectFit" aria-hidden="true" />
+          </view>
+        </picker>
+      </view>
+      <view class="compose-field">
+        <text class="compose-label">发布日期</text>
+        <mmw-date-picker value="{{publishForm.date}}" disabled="{{publishing}}" bind:change="onPublishDate" label="发布日期">
+          <view class="compose-control">
+            <text>{{publishForm.date}}</text>
+            <image class="compose-arrow" src="/images/ui/calendar.png" mode="aspectFit" aria-hidden="true" />
+          </view>
+        </mmw-date-picker>
+      </view>
+    </view>
+
+    <view class="compose-field">
+      <text class="compose-label">文字描述</text>
+      <textarea
+        class="compose-textarea"
+        aria-label="文字描述"
+        placeholder-class="compose-placeholder"
+        placeholder="输入描述"
+        value="{{publishForm.note}}"
+        maxlength="1400"
+        disabled="{{publishing}}"
+        data-field="note"
+        bindinput="onPublishField"
+      />
+    </view>
+
+    <view class="compose-field compose-field--photos">
+      <view class="compose-photos-heading">
+        <text class="compose-label">照片</text>
+        <text class="compose-photo-count">{{publishForm.photos.length}} / {{maxPublishPhotos}}</text>
+      </view>
+      <mmw-photos items="{{publishForm.photos}}" editable retryable="{{!!publishForm.postId}}" limit="{{maxPublishPhotos}}" disabled="{{publishing}}"
+        bind:add="onAddPublishPhotos" bind:remove="onRemovePublishPhoto" bind:preview="onPreviewPublishPhoto" />
+    </view>
+
+    <text wx:if="{{publishError}}" class="compose-error" aria-live="polite">{{publishError}}</text>
+    <button class="mmw-button mmw-button--primary compose-submit" loading="{{publishing}}" disabled="{{publishing}}" bindtap="onSubmitPost">
+      <image wx:if="{{!publishing}}" src="/images/ui/send.png" mode="aspectFit" aria-hidden="true" />
+      <text>{{publishing ? '正在发布' : publishForm.postId ? '重新发布' : '发布动态'}}</text>
+    </button>
+  </view>
+</template>

@@ -1,0 +1,29 @@
+<view class="photo-grid {{fullWidthSingle && !editable && tiles.length === 1 ? 'photo-grid--single' : ''}}">
+  <view wx:for="{{tiles}}" wx:key="key" class="photo-cell">
+    <view class="photo-frame photo-visual" aria-hidden="true">
+      <image wx:if="{{item.source && !item.failed}}" class="photo-thumb" src="{{item.source}}"
+        mode="{{fullWidthSingle && !editable && tiles.length === 1 ? 'widthFix' : 'aspectFill'}}"
+        lazy-load="{{!editable}}" binderror="onImageError" data-index="{{index}}" data-key="{{item.key}}" data-source="{{item.source}}" />
+      <view wx:else class="photo-fallback">
+        <image src="/images/ui/image-off.png" mode="aspectFit" aria-hidden="true" />
+        <text>{{retryable ? '点按重试' : '照片暂不可用'}}</text>
+      </view>
+    </view>
+    <view wx:if="{{!passive}}" class="photo-frame photo-hit" bindtap="onPreview" data-index="{{index}}"
+      aria-role="button" aria-disabled="{{disabled}}"
+      aria-label="{{(item.failed || !item.source) && retryable ? '重试第 ' + (index + 1) + ' 张照片' : '查看第 ' + (index + 1) + ' 张照片'}}" />
+    <view wx:if="{{editable && !passive}}" class="photo-remove {{disabled ? 'photo-control--disabled' : ''}}"
+      catchtap="onRemove" data-index="{{index}}" aria-role="button" aria-disabled="{{disabled}}" aria-label="移除第 {{index + 1}} 张照片">
+      <view class="photo-remove-icon">
+        <image src="/images/ui/close.png" mode="aspectFit" aria-hidden="true" />
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{editable && !passive && tiles.length < limit}}" class="photo-cell photo-cell--add">
+    <view class="photo-frame photo-add {{disabled ? 'photo-control--disabled' : ''}}" bindtap="onAdd"
+      aria-role="button" aria-disabled="{{disabled}}" aria-label="添加照片">
+      <image src="/images/ui/image-add.png" mode="aspectFit" aria-hidden="true" />
+      <text>添加照片</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "实用工具",
+  "usingComponents": {
+    "arithmetic-worksheet": "/components/arithmetic-worksheet/index",
+    "writing-worksheet": "/components/writing-worksheet/index"
+  }
+}

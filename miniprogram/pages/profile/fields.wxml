@@ -1,0 +1,28 @@
+<template name="studentFields">
+  <view class="student-fields">
+    <view wx:for="{{fields}}" wx:key="key" class="student-field {{item.key === 'age' || item.key === 'grade' ? 'student-field--compact' : ''}}">
+      <label class="student-label" for="student-field-{{item.key}}">{{item.label}}{{item.optional ? '（选填）' : ''}}</label>
+      <picker wx:if="{{item.key === 'grade'}}" id="student-field-{{item.key}}" mode="selector" range="{{grades}}" value="{{gradeIndex}}"
+        disabled="{{saving}}" aria-label="选择年级" bindchange="onGradeChange">
+        <view class="student-input student-input--picker">
+          <text class="{{form.grade ? '' : 'student-placeholder'}}">{{form.grade || '请选择年级'}}</text>
+          <image src="/images/ui/expand.png" mode="aspectFit" aria-hidden="true" />
+        </view>
+      </picker>
+      <input
+        wx:else
+        id="student-field-{{item.key}}"
+        aria-label="{{item.label}}"
+        class="student-input"
+        placeholder-class="student-placeholder"
+        placeholder="{{item.placeholder}}"
+        type="{{item.type}}"
+        value="{{form[item.key]}}"
+        maxlength="{{item.limit}}"
+        disabled="{{saving}}"
+        data-field="{{item.key}}"
+        bindinput="onFieldInput"
+      />
+    </view>
+  </view>
+</template>

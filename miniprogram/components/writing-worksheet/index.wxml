@@ -1,0 +1,167 @@
+<view class="writing">
+  <view class="writing-card writing-settings">
+    <block wx:if="{{mode === 'strokes'}}">
+      <view class="writing-field">
+        <view class="writing-field-heading">
+          <text class="writing-label">选择笔画</text>
+          <text class="writing-muted">已选 {{exampleFields.length}} 个</text>
+        </view>
+        <view wx:for="{{strokeGroups}}" wx:key="key" wx:for-item="group" class="writing-stroke-group">
+          <button class="writing-button writing-toggle writing-group-toggle" data-group="{{group.key}}"
+            bindtap="toggleStrokeGroup" aria-expanded="{{groupOpen[group.key] || false}}">
+            <text>{{group.name}}</text>
+            <view class="writing-group-count">
+              <text class="writing-muted">{{groupCounts[group.key]}} / {{group.choices.length}}</text>
+              <image src="/images/ui/{{groupOpen[group.key] ? 'collapse' : 'expand'}}.png" aria-hidden="true" />
+            </view>
+          </button>
+          <view wx:if="{{groupOpen[group.key]}}" class="writing-strokes">
+            <button wx:for="{{group.choices}}" wx:key="id"
+              class="writing-button writing-stroke-choice {{selectedStrokes[item.id] ? 'writing-button--selected' : ''}}"
+              data-id="{{item.id}}" bindtap="toggleStroke" aria-pressed="{{selectedStrokes[item.id] || false}}">
+              <image class="writing-stroke-illustration" src="{{item.preview}}" mode="aspectFit" aria-hidden="true" />
+              <text>{{item.name}}</text>
+              <view wx:if="{{selectedStrokes[item.id]}}" class="writing-selection-mark" aria-hidden="true">
+                <image src="/images/ui/check.png" mode="aspectFit" />
+              </view>
+            </button>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{exampleFields.length}}" class="writing-disclosure">
+        <button class="writing-button writing-toggle" data-field="examplesOpen" bindtap="togglePanel"
+          aria-expanded="{{examplesOpen}}">
+          <text>设置例字</text>
+          <image src="/images/ui/{{examplesOpen ? 'collapse' : 'expand'}}.png" aria-hidden="true" />
+        </button>
+        <view wx:if="{{examplesOpen}}" class="writing-example-grid">
+          <view wx:for="{{exampleFields}}" wx:key="id" class="writing-field">
+            <text class="writing-label">{{item.name}}的例字</text>
+            <input class="writing-input" value="{{item.text}}" maxlength="1" placeholder="选填 1 个汉字"
+              aria-label="{{item.name}}的例字" data-id="{{item.id}}" bindinput="changeExample" />
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <view wx:else class="writing-field">
+      <view class="writing-field-heading">
+        <text class="writing-label">{{inputLabels[mode].label}}</text>
+        <text wx:if="{{mode === 'hanzi' || mode === 'pinyin'}}" class="writing-muted">{{textCount}} / {{inputLimit}} 字</text>
+      </view>
+      <textarea class="writing-input writing-text" value="{{text}}" maxlength="{{inputLabels[mode].maxlength || inputMaxLength}}"
+        bindinput="changeText" aria-label="{{inputLabels[mode].label}}" placeholder="{{inputLabels[mode].placeholder}}" />
+      <text wx:if="{{inputError}}" class="writing-error" aria-live="polite">{{inputError}}</text>
+      <text wx:elif="{{inputNotice}}" class="writing-muted" aria-live="polite">{{inputNotice}}</text>
+      <text wx:elif="{{mode === 'number'}}" class="writing-muted">每组 1–6 位，多组用空格、逗号或换行分隔。</text>
+      <text wx:elif="{{mode === 'pinyin'}}" class="writing-muted">自动转换为带声调的拼音，使用四线三格。</text>
+      <text wx:elif="{{mode === 'words'}}" class="writing-muted">多个单词用空格、逗号或换行分隔。</text>
+    </view>
+
+    <view wx:if="{{mode === 'letters'}}" class="writing-field">
+      <text class="writing-label">字母大小写</text>
+      <view class="writing-grids">
+        <button wx:for="{{letterCases}}" wx:key="key" data-letter-case="{{item.key}}" bindtap="chooseLetterCase"
+          class="writing-button {{letterCase === item.key ? 'writing-button--selected' : ''}}"
+          aria-pressed="{{letterCase === item.key}}">
+          <text>{{item.name}}</text>
+          <view class="writing-selection-mark" aria-hidden="true">
+            <image src="/images/ui/check.png" mode="aspectFit" />
+          </view>
+        </button>
+      </view>
+    </view>
+
+    <view wx:if="{{mode === 'letters' || mode === 'words'}}" class="writing-field">
+      <text class="writing-label">英文字体</text>
+      <picker mode="selector" range="{{fonts}}" value="{{englishFontIndex}}" bindchange="chooseEnglishFont"
+        aria-label="英文字体">
+        <view class="writing-input writing-select">
+          <text>{{fonts[englishFontIndex]}}</text><image src="/images/ui/expand.png" aria-hidden="true" />
+        </view>
+      </picker>
+    </view>
+
+    <view wx:if="{{mode === 'hanzi' || mode === 'strokes'}}" class="writing-field">
+      <text class="writing-label">方格类型</text>
+      <view class="writing-grids">
+        <button wx:for="{{grids}}" wx:key="key" data-grid="{{item.key}}" bindtap="chooseGrid"
+          class="writing-button {{grid === item.key ? 'writing-button--selected' : ''}}"
+          aria-pressed="{{grid === item.key}}">
+          <text>{{item.name}}</text>
+          <view class="writing-selection-mark" aria-hidden="true">
+            <image src="/images/ui/check.png" mode="aspectFit" />
+          </view>
+        </button>
+      </view>
+    </view>
+
+    <view class="writing-columns">
+      <view class="writing-field">
+        <text class="writing-label">{{mode === 'pinyin' || mode === 'letters' || mode === 'words' ? '行高' : '方格大小'}}</text>
+        <picker mode="selector" range="{{sizeLabels}}" value="{{sizeIndex}}" data-field="sizeIndex"
+          aria-label="{{mode === 'pinyin' || mode === 'letters' || mode === 'words' ? '行高' : '方格大小'}}" bindchange="chooseOption">
+          <view class="writing-input writing-select">
+            <text>{{sizeLabels[sizeIndex]}}</text><image src="/images/ui/expand.png" aria-hidden="true" />
+          </view>
+        </picker>
+      </view>
+      <view class="writing-field">
+        <text class="writing-label">描红格数</text>
+        <picker mode="selector" range="{{traceLabels}}" value="{{traceIndex}}" data-field="traceIndex"
+          aria-label="描红格数" bindchange="chooseOption">
+          <view class="writing-input writing-select">
+            <text>{{traceLabels[traceIndex]}}</text><image src="/images/ui/expand.png" aria-hidden="true" />
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="writing-disclosure">
+      <button class="writing-button writing-toggle" data-field="advancedOpen" bindtap="togglePanel"
+        aria-expanded="{{advancedOpen}}">
+        <text>排版设置</text>
+        <image src="/images/ui/{{advancedOpen ? 'collapse' : 'expand'}}.png" aria-hidden="true" />
+      </button>
+      <view wx:if="{{advancedOpen}}" class="writing-options">
+        <view class="writing-option">
+          <text>行间距</text>
+          <picker mode="selector" range="{{gapLabels}}" value="{{gapIndex}}" data-field="gapIndex"
+            aria-label="行间距" bindchange="chooseOption">
+            <view class="writing-input writing-select">
+              <text>{{gapLabels[gapIndex]}}</text><image src="/images/ui/expand.png" aria-hidden="true" />
+            </view>
+          </picker>
+        </view>
+        <view class="writing-option"><text>首格高亮</text>
+          <switch checked="{{highlight}}" color="#205a40" aria-label="首格高亮"
+            data-field="highlight" bindchange="toggleOption" />
+        </view>
+        <view class="writing-option"><text>插入空白练习行</text>
+          <switch checked="{{blankRow}}" color="#205a40" aria-label="插入空白练习行"
+            data-field="blankRow" bindchange="toggleOption" />
+        </view>
+        <view class="writing-option"><text>显示第一页标题</text>
+          <switch checked="{{includeHeading}}" color="#205a40" aria-label="显示第一页标题、姓名和日期"
+            data-field="includeHeading" bindchange="toggleOption" />
+        </view>
+      </view>
+    </view>
+
+    <text wx:if="{{error}}" class="writing-error" aria-live="polite">{{error}}</text>
+    <text wx:if="{{notice}}" class="writing-muted" aria-live="polite">{{notice}}</text>
+    <button class="writing-button writing-primary" bindtap="requestGenerate" loading="{{generating}}"
+      disabled="{{generating || exporting || !!inputError}}">生成字帖</button>
+  </view>
+
+  <view class="writing-card writing-preview">
+    <text class="writing-title" aria-role="heading">字帖 PDF 预览</text>
+    <text wx:if="{{dirty}}" class="writing-muted">生成后查看当前字帖。</text>
+    <block wx:elif="{{pdfDocumentId}}">
+      <button class="writing-button writing-export" disabled="{{exporting || generating}}" loading="{{exporting}}"
+        bindtap="exportPdf">导出 A4 PDF</button>
+      <text wx:if="{{exportError}}" class="writing-error" aria-live="polite">{{exportError}}</text>
+      <pdf-page-preview document-id="{{pdfDocumentId}}" />
+    </block>
+  </view>
+</view>

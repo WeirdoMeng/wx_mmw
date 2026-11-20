@@ -1,0 +1,20 @@
+<view wx:if="{{documentId}}" class="pdf-preview">
+  <view class="pdf-preview-paper" aria-label="PDF 页面">
+    <image wx:if="{{imagePath}}" class="pdf-preview-image" src="{{imagePath}}" mode="aspectFit"
+      data-path="{{imagePath}}" binderror="imageError" aria-label="PDF 第 {{page}} 页，共 {{pageCount}} 页" />
+    <text wx:if="{{loading}}" class="pdf-preview-status {{imagePath ? 'pdf-preview-status--overlay' : ''}}"
+      aria-live="polite">正在读取 PDF 页面…</text>
+    <text wx:elif="{{!imagePath && error}}" class="pdf-preview-status">页面暂未加载</text>
+  </view>
+
+  <view wx:if="{{error}}" class="pdf-preview-error">
+    <text aria-live="polite">{{error}}</text>
+    <button class="pdf-preview-button" bindtap="retryPage">重试</button>
+  </view>
+
+  <view class="pdf-preview-pager" aria-label="PDF 翻页">
+    <button class="pdf-preview-button" bindtap="movePage" data-step="-1" disabled="{{loading || page <= 1}}">上一页</button>
+    <text class="pdf-preview-page-label" aria-live="polite">{{pageCount ? page + ' / ' + pageCount : '— / —'}}</text>
+    <button class="pdf-preview-button" bindtap="movePage" data-step="1" disabled="{{loading || page >= pageCount}}">下一页</button>
+  </view>
+</view>

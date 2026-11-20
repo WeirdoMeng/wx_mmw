@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "每周菜谱",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "mmw-share-cover": "/components/mmw-share-cover/index"
+  }
+}

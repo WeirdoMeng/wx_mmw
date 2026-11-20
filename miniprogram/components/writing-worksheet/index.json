@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "pdf-page-preview": "/components/pdf-page-preview/index"
+  }
+}

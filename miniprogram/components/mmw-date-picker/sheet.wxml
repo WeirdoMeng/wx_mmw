@@ -1,0 +1,60 @@
+<view class="date-picker-layer">
+  <view class="date-picker-mask" catchtap="close" catchtouchmove="stop" aria-hidden="true" />
+  <view class="date-picker-sheet" role="dialog" aria-role="dialog" aria-modal="true"
+    aria-label="{{label || (fields === 'month' ? '选择月份' : '选择日期')}}">
+    <view class="date-picker-header">
+      <view class="date-picker-title">
+        <view class="date-picker-symbol" aria-hidden="true"><image src="/images/ui/calendar.png" mode="aspectFit" /></view>
+        <text>{{label || (fields === 'month' ? '选择月份' : '选择日期')}}</text>
+      </view>
+      <button class="date-picker-control date-picker-close" aria-label="关闭日期选择" catchtap="close"
+        hover-class="date-picker-control--pressed">
+        <image src="/images/ui/close.png" mode="aspectFit" aria-hidden="true" />
+      </button>
+    </view>
+
+    <view class="date-picker-body">
+      <view class="date-picker-navigation">
+        <button class="date-picker-control date-picker-arrow" disabled="{{!canPrev}}" data-offset="-1" catchtap="navigate"
+          aria-label="{{view === 'years' ? '上一组年份' : view === 'months' ? '上一年' : '上个月'}}" hover-class="date-picker-control--pressed">
+          <image src="/images/ui/back.png" mode="aspectFit" aria-hidden="true" />
+        </button>
+        <button class="date-picker-control date-picker-period" catchtap="changeView" hover-class="date-picker-control--pressed"
+          aria-label="{{heading + (view === 'months' ? '，选择年份' : '，选择月份')}}">
+          <text>{{heading}}</text>
+          <image src="/images/ui/expand.png" mode="aspectFit" aria-hidden="true" />
+        </button>
+        <button class="date-picker-control date-picker-arrow" disabled="{{!canNext}}" data-offset="1" catchtap="navigate"
+          aria-label="{{view === 'years' ? '下一组年份' : view === 'months' ? '下一年' : '下个月'}}" hover-class="date-picker-control--pressed">
+          <image src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" />
+        </button>
+      </view>
+
+      <block wx:if="{{view === 'days'}}">
+        <view class="date-picker-week">
+          <text wx:for="{{weekdays}}" wx:key="*this" aria-label="周{{item}}">{{item}}</text>
+        </view>
+        <view class="date-picker-days">
+          <button wx:for="{{days}}" wx:key="key"
+            class="date-picker-control date-picker-day {{item.outside ? 'date-picker-day--outside' : ''}} {{item.today ? 'date-picker-day--today' : ''}} {{item.selected ? 'date-picker-control--selected' : ''}}"
+            disabled="{{item.disabled}}" data-value="{{item.value}}" catchtap="selectDay" aria-label="{{item.label}}"
+            aria-pressed="{{item.selected}}" hover-class="date-picker-control--pressed">
+            <text>{{item.number}}</text>
+          </button>
+        </view>
+      </block>
+      <view wx:else class="date-picker-periods">
+        <button wx:for="{{periods}}" wx:key="index"
+          class="date-picker-control date-picker-option {{item.active ? 'date-picker-control--selected' : ''}}"
+          disabled="{{item.disabled}}" data-index="{{item.index}}" catchtap="selectPeriod" aria-pressed="{{item.active}}"
+          hover-class="date-picker-control--pressed">{{item.text}}</button>
+      </view>
+    </view>
+
+    <view class="date-picker-footer">
+      <button class="date-picker-control date-picker-quick" disabled="{{!quickAllowed}}" catchtap="selectQuick"
+        hover-class="date-picker-control--pressed">{{fields === 'month' ? '本月' : '今天'}}</button>
+      <button class="date-picker-control date-picker-cancel" catchtap="close" hover-class="date-picker-control--pressed">取消</button>
+    </view>
+  </view>
+</view>

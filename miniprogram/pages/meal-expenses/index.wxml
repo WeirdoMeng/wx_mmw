@@ -1,0 +1,248 @@
+<view class="expense-page">
+  <view wx:if="{{authLoading}}" class="expense-state" aria-live="polite">正在核对权限…</view>
+  <view wx:elif="{{!authorized}}" class="expense-state">
+    <text aria-live="polite">{{accessError}}</text>
+    <button wx:if="{{authRetry}}" class="expense-button expense-button--soft" bindtap="checkAccess">重试</button>
+  </view>
+
+  <block wx:else>
+    <view class="expense-org">
+      <image src="/images/ui/organization.png" mode="aspectFit" aria-hidden="true" />
+      <text>{{organizationName}}</text>
+    </view>
+
+    <view class="expense-overview">
+      <view class="expense-overview-total">
+        <text class="expense-overview-label">{{filtered ? '筛选支出合计' : '当月支出合计'}}</text>
+        <text class="expense-total-amount">{{summary ? summary.amount : '—'}}</text>
+      </view>
+      <text wx:if="{{summary}}" class="expense-total-count">{{summary.count}} 笔支出</text>
+    </view>
+
+    <view class="expense-actions">
+      <view>
+        <button class="expense-button expense-button--primary" bindtap="onCreate">
+          <image src="/images/ui/add.png" mode="aspectFit" aria-hidden="true" />
+          <text>登记支出</text>
+        </button>
+      </view>
+      <view>
+        <button class="expense-button expense-button--surface" bindtap="onExport"
+          disabled="{{exporting || loading || !summary || !!listError}}">
+          <image src="/images/ui/document.png" mode="aspectFit" aria-hidden="true" />
+          <text>{{exporting ? '正在导出…' : '导出 Excel'}}</text>
+        </button>
+      </view>
+    </view>
+
+    <view class="expense-filter-card">
+      <view class="expense-filters">
+        <view class="expense-field">
+          <text class="expense-field-label">月份</text>
+          <mmw-date-picker fields="month" value="{{month}}" bind:change="onMonthChange" label="筛选月份">
+            <view class="expense-control">
+              <text>{{month}}</text><image src="/images/ui/calendar.png" mode="aspectFit" aria-hidden="true" />
+            </view>
+          </mmw-date-picker>
+        </view>
+        <view class="expense-field">
+          <text class="expense-field-label">支出类别</text>
+          <picker mode="selector" range="{{filterOptions}}" range-key="label" value="{{filterIndex}}"
+            bindchange="onCategoryChange" aria-label="筛选支出类别">
+            <view class="expense-control">
+              <text>{{filterOptions[filterIndex].label}}</text><image src="/images/ui/expand.png" mode="aspectFit" aria-hidden="true" />
+            </view>
+          </picker>
+        </view>
+      </view>
+      <view class="expense-search">
+        <view class="expense-search-field">
+          <image src="/images/ui/search.png" mode="aspectFit" aria-hidden="true" />
+          <input value="{{search}}" maxlength="100" aria-label="按商家、经手人或备注搜索" placeholder="商家、经手人或备注"
+            bindinput="onSearchInput" bindconfirm="onSearch" confirm-type="search" />
+        </view>
+        <view><button class="expense-button expense-button--soft" bindtap="onSearch">查询</button></view>
+      </view>
+    </view>
+
+    <view wx:if="{{summary}}" class="expense-breakdown">
+      <text class="expense-section-title">按类别统计</text>
+      <view class="expense-breakdown-row" wx:for="{{summary.categories}}" wx:key="key">
+        <view class="expense-breakdown-top">
+          <view class="expense-breakdown-name">
+            <text>{{item.label}}</text><text class="expense-breakdown-count">{{item.count}} 笔</text>
+          </view>
+          <text class="expense-breakdown-amount">{{item.amount}}</text>
+        </view>
+        <view class="expense-bar" aria-hidden="true">
+          <view class="expense-bar-fill expense-bar-fill--{{item.key}}" style="width: {{item.width}}%"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="expense-list-head">
+      <text class="expense-section-title">支出明细</text>
+      <text wx:if="{{summary}}" class="expense-list-count">共 {{summary.count}} 笔</text>
+    </view>
+    <view class="expense-records">
+      <view wx:for="{{items}}" wx:key="id">
+        <button class="expense-record" bindtap="onOpenExpense" data-id="{{item.id}}">
+          <view class="expense-record-inner">
+            <view class="expense-record-top">
+              <text class="expense-badge expense-badge--{{item.category}}">{{item.categoryLabel}}</text>
+              <text class="expense-date">{{item.date}}</text>
+            </view>
+            <view class="expense-record-main">
+              <text class="expense-record-name">{{item.headline}}</text>
+              <text class="expense-record-amount">{{item.amountLabel}}</text>
+            </view>
+            <view class="expense-record-bottom">
+              <text class="expense-record-handler">{{item.handler ? '经手人 · ' + item.handler : '查看详情'}}</text>
+              <text wx:if="{{item.imageCount}}" class="expense-record-photos">{{item.imageCount}} 张凭证</text>
+              <image src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" />
+            </view>
+          </view>
+        </button>
+      </view>
+    </view>
+
+    <view wx:if="{{loading || listError || hasMore || !items.length}}" class="expense-state expense-list-state">
+      <text wx:if="{{loading}}" aria-live="polite">正在加载支出记录…</text>
+      <block wx:elif="{{listError}}">
+        <text class="expense-error" aria-live="polite">{{listError}}</text>
+        <button class="expense-button expense-button--soft" bindtap="onListRetry">重试</button>
+      </block>
+      <button wx:elif="{{hasMore}}" class="expense-button expense-button--soft" bindtap="onMore">加载更多</button>
+      <text wx:elif="{{!items.length}}" aria-live="polite">当前条件下没有支出记录</text>
+    </view>
+  </block>
+</view>
+
+<view wx:if="{{authorized && panel}}" class="expense-overlay">
+  <view class="expense-backdrop" catchtap="onClosePanel" catchtouchmove="stopTouch" aria-hidden="true"></view>
+  <view class="expense-sheet" aria-role="dialog" aria-label="{{panel === 'detail' ? '支出详情' : record ? '编辑支出' : '登记支出'}}">
+    <view class="expense-sheet-head">
+      <text>{{panel === 'detail' ? '支出详情' : record ? '编辑支出' : '登记支出'}}</text>
+      <view>
+        <button class="expense-sheet-close" bindtap="onClosePanel" disabled="{{saving || picking || confirming}}" aria-label="关闭">
+          <image src="/images/ui/close.png" mode="aspectFit" aria-hidden="true" />
+        </button>
+      </view>
+    </view>
+
+    <scroll-view class="expense-sheet-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="expense-sheet-body">
+        <block wx:if="{{panel === 'detail'}}">
+          <view wx:if="{{panelLoading}}" class="expense-state" aria-live="polite">正在加载支出详情…</view>
+          <view wx:elif="{{!record && panelError}}" class="expense-state">
+            <text class="expense-error" aria-live="polite">{{panelError}}</text>
+            <button class="expense-button expense-button--soft" bindtap="onRetryDetail">重试</button>
+          </view>
+
+          <block wx:elif="{{record}}">
+            <view class="expense-detail-hero">
+              <view>
+                <text class="expense-badge expense-badge--{{record.category}}">{{record.categoryLabel}}</text>
+                <text class="expense-detail-amount">{{record.amountLabel}}</text>
+              </view>
+              <text class="expense-date">{{record.date}}</text>
+            </view>
+            <view class="expense-detail-meta">
+              <view class="expense-detail-row"><text>商家或供应商</text><text>{{record.merchant || '—'}}</text></view>
+              <view class="expense-detail-row"><text>经手人</text><text>{{record.handler || '—'}}</text></view>
+              <view class="expense-detail-row"><text>备注</text><text>{{record.note || '—'}}</text></view>
+            </view>
+
+            <view wx:if="{{proofs.length}}" class="expense-proof">
+              <view class="expense-proof-head"><text>付款凭证</text><text>{{proofs.length}} 张</text></view>
+              <mmw-photos items="{{proofs}}" retryable="{{true}}" disabled="{{saving}}" bind:preview="onPreviewProof" />
+            </view>
+          </block>
+        </block>
+
+        <block wx:elif="{{form}}">
+          <view class="expense-form">
+            <view class="expense-form-split">
+              <view class="expense-field">
+                <text class="expense-field-label">支出日期</text>
+                <mmw-date-picker value="{{form.date}}" bind:change="onDateChange" disabled="{{saving}}" label="支出日期">
+                  <view class="expense-control">
+                    <text>{{form.date}}</text><image src="/images/ui/calendar.png" mode="aspectFit" aria-hidden="true" />
+                  </view>
+                </mmw-date-picker>
+              </view>
+              <view class="expense-field">
+                <text class="expense-field-label">支出类别</text>
+                <picker mode="selector" range="{{categoryOptions}}" range-key="label" value="{{form.categoryIndex}}"
+                  bindchange="onFormCategory" disabled="{{saving}}" aria-label="支出类别">
+                  <view class="expense-control">
+                    <text class="{{!form.categoryIndex ? 'expense-placeholder' : ''}}">{{form.categoryLabel}}</text>
+                    <image src="/images/ui/expand.png" mode="aspectFit" aria-hidden="true" />
+                  </view>
+                </picker>
+              </view>
+            </view>
+
+            <view class="expense-field">
+              <text class="expense-field-label">支出金额</text>
+              <view class="expense-control expense-amount-field">
+                <text>¥</text>
+                <input type="digit" value="{{form.amount}}" maxlength="17" data-field="amount" bindinput="onFormInput"
+                  disabled="{{saving}}" aria-label="支出金额，单位元" placeholder="0.00" cursor-spacing="88" />
+              </view>
+            </view>
+
+            <view class="expense-field">
+              <view class="expense-field-label">商家或供应商 <text class="expense-optional">选填</text></view>
+              <input class="expense-input" value="{{form.merchant}}" maxlength="80" data-field="merchant" bindinput="onFormInput"
+                disabled="{{saving}}" aria-label="商家或供应商" placeholder="填写商家或供应商" cursor-spacing="88" />
+            </view>
+
+            <view class="expense-field">
+              <view class="expense-field-label">经手人 <text class="expense-optional">选填</text></view>
+              <input class="expense-input" value="{{form.handler}}" maxlength="40" data-field="handler" bindinput="onFormInput"
+                disabled="{{saving}}" aria-label="经手人" placeholder="填写经手人" cursor-spacing="88" />
+            </view>
+
+            <view class="expense-field">
+              <view class="expense-field-label">备注 <text class="expense-optional">选填</text></view>
+              <textarea class="expense-input expense-textarea" value="{{form.note}}" maxlength="500" data-field="note" bindinput="onFormInput"
+                disabled="{{saving}}" aria-label="备注" placeholder="补充支出用途" cursor-spacing="88" />
+            </view>
+
+            <view class="expense-proof">
+              <view class="expense-proof-head">
+                <view>付款凭证 <text class="expense-optional">选填</text></view>
+                <text>{{proofs.length}} / {{proofLimit}}</text>
+              </view>
+              <mmw-photos items="{{proofs}}" editable="{{true}}" retryable="{{true}}" limit="{{proofLimit}}" disabled="{{saving || picking}}"
+                bind:add="onPickProofs" bind:remove="onRemoveProof" bind:preview="onPreviewProof" />
+            </view>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+
+    <text wx:if="{{panelError && (panel === 'edit' || record)}}" class="expense-error expense-panel-error" aria-live="polite">{{panelError}}</text>
+    <view wx:if="{{panel === 'edit' || record}}" class="expense-sheet-actions">
+      <block wx:if="{{panel === 'edit'}}">
+        <view>
+          <button class="expense-button expense-button--surface" bindtap="onClosePanel" disabled="{{saving || picking}}">取消</button>
+        </view>
+        <view>
+          <button class="expense-button expense-button--primary" bindtap="onSave" disabled="{{saving || picking}}">
+            {{saving ? '正在保存…' : record ? '保存修改' : '登记支出'}}
+          </button>
+        </view>
+      </block>
+      <block wx:else>
+        <view>
+          <button class="expense-button expense-button--danger" bindtap="onDelete" disabled="{{saving || confirming}}">{{saving ? '正在删除…' : '删除'}}</button>
+        </view>
+        <view>
+          <button class="expense-button expense-button--primary" bindtap="onEdit" disabled="{{saving || confirming}}">编辑</button>
+        </view>
+      </block>
+    </view>
+  </view>
+</view>

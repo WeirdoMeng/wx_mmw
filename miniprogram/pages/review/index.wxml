@@ -1,0 +1,116 @@
+<view class="review-page">
+  <view wx:if="{{loading || error}}" class="review-message mmw-surface">
+    <text aria-live="polite">{{loading ? '正在加载审核申请' : error}}</text>
+    <button wx:if="{{error && denied}}" class="mmw-button mmw-button--white" bindtap="goBack">返回我的</button>
+    <button wx:elif="{{error}}" class="mmw-button mmw-button--white" bindtap="loadRequests">重试</button>
+  </view>
+  <block wx:else>
+    <view class="review-heading">
+      <view class="review-heading-copy">
+        <text class="review-organization">{{organizationName}}</text>
+        <text class="review-title" aria-role="heading">登记申请</text>
+      </view>
+      <text class="review-count" aria-live="polite">{{total}} 条申请</text>
+    </view>
+
+    <view wx:if="{{!items.length}}" class="review-message mmw-surface"><text>暂无登记申请</text></view>
+    <button wx:for="{{items}}" wx:key="id" class="review-card mmw-surface" data-id="{{item.id}}"
+      bindtap="openReview" hover-class="review-pressed" aria-label="{{item.typeLabel}}，{{item.name}}，{{item.statusLabel}}">
+      <view class="review-card-top">
+        <view class="review-card-copy">
+          <text class="review-card-kind">{{item.typeLabel}}</text>
+          <text class="review-card-name">{{item.name}}</text>
+        </view>
+        <text class="review-badge review-badge--{{item.status}}">{{item.statusLabel}}</text>
+      </view>
+      <view class="review-card-base">
+        <text wx:if="{{item.meta}}" class="review-card-meta">{{item.meta}}</text>
+        <view class="review-card-link"><text>{{item.actionable ? '审核' : '查看'}}</text>
+          <image src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" />
+        </view>
+      </view>
+    </button>
+    <view wx:if="{{hasMore}}" class="review-pagination">
+      <text wx:if="{{moreError}}" class="review-error" aria-live="polite">{{moreError}}</text>
+      <button class="mmw-button mmw-button--white" bindtap="loadMoreRequests" loading="{{loadingMore}}" disabled="{{loadingMore || active}}">
+        {{moreError ? '重试加载' : '加载更多申请'}}
+      </button>
+    </view>
+  </block>
+</view>
+
+<view wx:if="{{active}}" class="review-mask">
+  <view class="review-backdrop" catchtap="closeReview" catchtouchmove="preventScroll"></view>
+  <view class="review-sheet" aria-role="dialog" aria-label="{{active.typeLabel}}审核">
+    <view class="review-sheet-head">
+      <view class="review-sheet-person">
+        <text class="review-card-kind">{{active.typeLabel}}</text>
+        <text class="review-card-name" aria-role="heading">{{active.name}}</text>
+      </view>
+      <text class="review-badge review-badge--{{active.status}}">{{active.statusLabel}}</text>
+      <button class="review-close" bindtap="closeReview" disabled="{{saving}}" aria-label="关闭审核详情">
+        <image src="/images/ui/close.png" mode="aspectFit" aria-hidden="true" />
+      </button>
+    </view>
+
+    <scroll-view class="review-sheet-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="review-sheet-body">
+        <view class="review-facts">
+          <view wx:for="{{active.facts}}" wx:key="label" class="review-fact">
+            <text>{{item.label}}</text><text class="review-fact-value" selectable>{{item.value || '—'}}</text>
+          </view>
+        </view>
+        <block wx:if="{{active.actionable}}">
+          <view class="review-field">
+            <text class="review-field-label">审核结果</text>
+            <view class="review-decisions">
+              <button wx:for="{{decisions}}" wx:key="id" class="review-decision {{decision === item.id ? 'review-selected' : ''}}"
+                data-id="{{item.id}}" bindtap="chooseDecision" disabled="{{saving}}" aria-pressed="{{decision === item.id}}">{{item.label}}</button>
+            </view>
+          </view>
+
+          <view wx:if="{{decision === 'approve'}}" class="review-field">
+            <text class="review-field-label">{{active.teacherRequest ? '教师档案' : '学生档案'}}</text>
+            <text wx:if="{{target}}" class="review-selected-name" aria-live="polite">已选择 {{target.name}}</text>
+            <button wx:if="{{active.teacherRequest}}" class="review-option {{target && target.id === '' ? 'review-selected' : ''}}"
+              data-create="{{true}}" bindtap="chooseTarget" disabled="{{saving}}" aria-pressed="{{target && target.id === ''}}">
+              <text>创建新教师档案</text>
+            </button>
+            <view wx:if="{{suggestions.length && !search}}" class="review-suggestions">
+              <text class="review-hint">找到 {{active.candidates.length}} 份可能匹配的档案</text>
+              <button wx:for="{{suggestions}}" wx:key="id" class="review-option {{target.id === item.id ? 'review-selected' : ''}}"
+                data-id="{{item.id}}" bindtap="chooseTarget" disabled="{{saving}}" aria-pressed="{{target.id === item.id}}">
+                <text>{{item.name}}</text><text wx:if="{{item.meta}}" class="review-hint">{{item.meta}}</text>
+              </button>
+            </view>
+            <view class="review-search">
+              <image src="/images/ui/search.png" mode="aspectFit" aria-hidden="true" />
+              <input value="{{search}}" bindinput="searchOptions" disabled="{{saving}}" maxlength="60"
+                placeholder="{{active.teacherRequest ? '搜索教师姓名或电话' : '搜索学生姓名或学校'}}"
+                aria-label="{{active.teacherRequest ? '搜索教师档案' : '搜索学生档案'}}" />
+            </view>
+            <view class="review-options">
+              <button wx:for="{{options}}" wx:key="id" class="review-option {{target.id === item.id ? 'review-selected' : ''}}"
+                data-id="{{item.id}}" bindtap="chooseTarget" disabled="{{saving}}" aria-pressed="{{target.id === item.id}}">
+                <view class="review-option-head"><text>{{item.name}}</text><text wx:if="{{item.matched}}" class="review-option-match">可能匹配</text></view>
+                <text wx:if="{{item.meta}}" class="review-hint">{{item.meta}}</text>
+              </button>
+              <text wx:if="{{optionsLoading && !options.length}}" class="review-hint" aria-live="polite">正在查询档案</text>
+              <text wx:elif="{{!options.length && !optionsError}}" class="review-hint">暂无符合条件的档案</text>
+            </view>
+            <view wx:if="{{optionsError || optionsHasMore}}" class="review-pagination">
+              <text wx:if="{{optionsError}}" class="review-error" aria-live="polite">{{optionsError}}</text>
+              <button wx:if="{{optionsError}}" class="mmw-button mmw-button--white" bindtap="retryOptions" disabled="{{saving || optionsLoading}}">重试查询</button>
+              <button wx:else class="mmw-button mmw-button--white" bindtap="moreOptions" loading="{{optionsLoading}}" disabled="{{saving || optionsLoading}}">加载更多档案</button>
+            </view>
+          </view>
+        </block>
+      </view>
+    </scroll-view>
+
+    <view wx:if="{{active.actionable}}" class="review-sheet-footer">
+      <text wx:if="{{formError}}" class="review-error" aria-live="polite">{{formError}}</text>
+      <button class="mmw-button mmw-button--primary review-submit" bindtap="confirmReview" loading="{{saving}}" disabled="{{saving}}">提交审核</button>
+    </view>
+  </view>
+</view>

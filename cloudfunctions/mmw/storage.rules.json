@@ -1,0 +1,4 @@
+{
+  "read": false,
+  "write": "auth != null && auth.openid != null && auth.openid != '' && resource.openid == auth.openid && /^mmw\\/staging\\//.test(resource.path)"
+}

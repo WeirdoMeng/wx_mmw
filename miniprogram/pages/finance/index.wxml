@@ -1,0 +1,617 @@
+<template name="listActions">
+  <view wx:if="{{list.loading || list.error || list.hasMore || !list.items.length}}" class="fin-list-status">
+    <text wx:if="{{list.loading}}" aria-live="polite">正在加载…</text>
+    <block wx:elif="{{list.error}}">
+      <text class="fin-error" aria-live="polite">{{list.error}}</text>
+      <button class="fin-button fin-button--soft" bindtap="onListAction" data-key="{{listKey}}" data-append="{{list.page > 0}}">重试</button>
+    </block>
+    <button wx:elif="{{list.hasMore}}" class="fin-button fin-button--soft" bindtap="onListAction" data-key="{{listKey}}" data-append="{{true}}">加载更多</button>
+    <text wx:elif="{{!list.items.length}}">{{empty}}</text>
+  </view>
+</template>
+
+<template name="bulkSelection">
+  <view wx:if="{{list.items.length || selectedCount}}" class="fin-bulk-selection">
+    <button class="fin-button fin-button--outline fin-select-all" data-key="{{listKey}}" bindtap="onSelectAll"
+      disabled="{{saving || list.loading || !list.items.length}}">
+      <text>{{list.hasMore ? '全选已加载' : '全选'}}</text>
+    </button>
+    <button class="fin-button fin-button--outline fin-clear-selection" data-key="{{listKey}}" bindtap="onClearSelection"
+      disabled="{{saving || !selectedCount}}"><text>取消全选</text></button>
+  </view>
+</template>
+
+<template name="figures">
+  <view class="fin-figures {{compact ? 'fin-figures--compact' : ''}}">
+    <view wx:for="{{metrics}}" wx:key="key" class="fin-figure fin-figure--{{item.key}}">
+      <text class="fin-figure-label">{{item.label}}</text><text class="fin-figure-value">{{item.value}}</text>
+    </view>
+  </view>
+</template>
+
+<template name="stageFields">
+  <view class="fin-form">
+    <view class="fin-form-field">
+      <label for="{{prefix + '-name'}}">阶段名称</label>
+      <input class="fin-form-input" placeholder="例如秋季学期" maxlength="80" cursor-spacing="{{88}}" confirm-type="done"
+        id="{{prefix + '-name'}}" aria-label="阶段名称" value="{{form.name}}" data-field="{{prefix + '.name'}}" bindinput="onText" disabled="{{saving}}" />
+    </view>
+    <view class="fin-form-split">
+      <view class="fin-form-field">
+        <view class="fin-form-label"><text>开始日期</text><text class="fin-form-optional">选填</text></view>
+        <view class="fin-form-date">
+          <view class="fin-form-date-slot">
+            <mmw-date-picker class="fin-form-picker" value="{{form.startDate}}" end="{{form.endDate}}"
+              data-field="{{prefix + '.startDate'}}" bind:change="onDate" disabled="{{saving}}" label="开始日期">
+              <view class="fin-form-option">
+                <text class="{{form.startDate ? '' : 'fin-form-placeholder'}}">{{form.startDate || '选择日期'}}</text>
+                <image wx:if="{{!form.startDate}}" class="fin-form-icon" src="/images/ui/calendar.png" mode="aspectFit" aria-hidden="true" />
+              </view>
+            </mmw-date-picker>
+          </view>
+          <view wx:if="{{form.startDate}}" class="fin-form-clear-slot">
+            <button class="fin-form-clear" data-field="{{prefix + '.startDate'}}" bindtap="clearStageDate" disabled="{{saving}}" aria-label="清除开始日期">
+              <view class="fin-form-clear-inner"><image class="fin-form-icon" src="/images/ui/close.png" mode="aspectFit" aria-hidden="true" /></view>
+            </button>
+          </view>
+        </view>
+      </view>
+      <view class="fin-form-field">
+        <view class="fin-form-label"><text>结束日期</text><text class="fin-form-optional">选填</text></view>
+        <view class="fin-form-date">
+          <view class="fin-form-date-slot">
+            <mmw-date-picker class="fin-form-picker" value="{{form.endDate}}" start="{{form.startDate}}"
+              data-field="{{prefix + '.endDate'}}" bind:change="onDate" disabled="{{saving}}" label="结束日期">
+              <view class="fin-form-option">
+                <text class="{{form.endDate ? '' : 'fin-form-placeholder'}}">{{form.endDate || '选择日期'}}</text>
+                <image wx:if="{{!form.endDate}}" class="fin-form-icon" src="/images/ui/calendar.png" mode="aspectFit" aria-hidden="true" />
+              </view>
+            </mmw-date-picker>
+          </view>
+          <view wx:if="{{form.endDate}}" class="fin-form-clear-slot">
+            <button class="fin-form-clear" data-field="{{prefix + '.endDate'}}" bindtap="clearStageDate" disabled="{{saving}}" aria-label="清除结束日期">
+              <view class="fin-form-clear-inner"><image class="fin-form-icon" src="/images/ui/close.png" mode="aspectFit" aria-hidden="true" /></view>
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="fin-form-field">
+      <label class="fin-form-label" for="{{prefix + '-reference'}}"><text>参考价</text><text class="fin-form-optional">选填</text></label>
+      <view class="fin-form-money">
+        <text aria-hidden="true">¥</text>
+        <view class="fin-form-native">
+          <input class="fin-form-native-input" type="digit" placeholder="金额" maxlength="17" cursor-spacing="{{88}}" id="{{prefix + '-reference'}}"
+            value="{{form.referenceAmount}}" data-field="{{prefix + '.referenceAmount'}}" bindinput="onText" disabled="{{saving}}" aria-label="参考价（元）" />
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<template name="financeSummary">
+  <view class="fin-hero">
+    <view class="fin-hero-head">
+      <view class="fin-hero-main">
+        <text class="fin-hero-label">净实收</text>
+        <text class="fin-hero-number">{{summary.net}}</text>
+      </view>
+      <view wx:if="{{summary.rate !== '—'}}" class="fin-hero-rate">
+        <text>收款率</text>
+        <text class="fin-hero-percent">{{summary.rate}}</text>
+      </view>
+    </view>
+    <view wx:if="{{summary.rate !== '—'}}" class="fin-hero-track" aria-hidden="true">
+      <view class="fin-fill fin-fill--net" style="width: {{summary.netWidth}}%"></view>
+      <view class="fin-fill fin-fill--balance" style="width: {{summary.balanceWidth}}%"></view>
+    </view>
+    <view class="fin-hero-facts">
+      <view wx:for="{{summary.facts}}" wx:key="key" class="fin-hero-fact">
+        <text class="fin-hero-label">{{item.label}}</text>
+        <text class="fin-hero-value {{item.key === 'balance' ? 'fin-hero-value--balance' : ''}}">{{item.value}}</text>
+      </view>
+    </view>
+  </view>
+  <view class="fin-activity">
+    <view wx:for="{{summary.activity}}" wx:key="key" class="fin-activity-item">
+      <text>{{item.label}}</text><text class="fin-activity-value">{{item.value}}</text>
+    </view>
+  </view>
+</template>
+
+<template name="stageRange">
+  <view wx:if="{{stage.startDate || stage.endDate}}" class="fin-stage-range">
+    <text wx:if="{{stage.startDate}}">{{stage.startDate}}</text>
+    <text wx:if="{{stage.startDate && stage.endDate}}">至</text>
+    <text wx:if="{{stage.endDate}}">{{stage.endDate}}</text>
+  </view>
+</template>
+
+<view class="fin-page">
+  <view wx:if="{{authLoading || !authorized}}" class="fin-card fin-access fin-list-status">
+    <text aria-live="polite">{{authLoading ? '正在核对财务管理权限' : accessError}}</text>
+    <button wx:if="{{authRetry}}" class="fin-button fin-button--soft" bindtap="checkAccess">重试</button>
+    <button wx:elif="{{!authLoading}}" class="fin-button fin-button--soft" bindtap="onBack">返回我的</button>
+  </view>
+
+  <block wx:else>
+    <view class="fin-org">
+      <image src="/images/ui/organization.png" mode="aspectFit" aria-hidden="true" />
+      <text>{{organizationName}}</text>
+    </view>
+
+    <view class="fin-tabs" aria-role="tablist" aria-label="财务功能">
+      <view class="fin-tab-cell">
+        <button class="fin-tab {{tab === 'overview' ? 'fin-tab--active' : ''}}" aria-role="tab" aria-selected="{{tab === 'overview'}}" data-tab="overview" bindtap="onTab"><text>财务总览</text></button>
+      </view>
+      <view class="fin-tab-cell">
+        <button class="fin-tab {{tab === 'billing' ? 'fin-tab--active' : ''}}" aria-role="tab" aria-selected="{{tab === 'billing'}}" data-tab="billing" bindtap="onTab"><text>收费</text></button>
+      </view>
+    </view>
+
+    <view class="fin-stage-panel">
+      <button class="fin-stage-trigger" bindtap="toggleStagePicker" aria-expanded="{{stagePickerOpen}}" disabled="{{saving}}">
+        <view class="fin-stage-row">
+          <view class="fin-stage-icon"><image src="/images/ui/calendar.png" mode="aspectFit" aria-hidden="true" /></view>
+          <view class="fin-stage-copy">
+            <text class="fin-stage-label">{{tab === 'billing' ? '收费阶段' : '统计范围'}}</text>
+            <text class="fin-stage-name">{{tab === 'billing' ? (currentStage.name || (stages.loading ? '正在加载阶段' : '暂无收费阶段')) : '已选 ' + selectedStages.length + ' 个阶段'}}</text>
+            <template wx:if="{{tab === 'billing' && currentStage}}" is="stageRange" data="{{stage: currentStage}}" />
+          </view>
+          <view class="fin-stage-action">
+            <text>{{stagePickerOpen ? '收起' : (tab === 'billing' ? '切换' : '选择')}}</text>
+            <image src="{{stagePickerOpen ? '/images/ui/collapse.png' : '/images/ui/expand.png'}}" mode="aspectFit" aria-hidden="true" />
+          </view>
+        </view>
+      </button>
+
+      <view wx:if="{{stagePickerOpen}}" class="fin-stage-picker">
+        <form bindsubmit="onSearchStages">
+          <view class="fin-toolbar">
+            <view class="fin-search">
+              <image src="/images/ui/search.png" mode="aspectFit" aria-hidden="true" />
+              <input class="fin-search-input" value="{{stageSearch}}" data-field="stageSearch" bindinput="onText" maxlength="60" placeholder="搜索收费阶段" aria-label="搜索收费阶段" confirm-type="search" bindconfirm="onSearchStages" />
+            </view>
+            <view class="fin-query-action"><button class="fin-button fin-button--soft" form-type="submit"><text>查询</text></button></view>
+          </view>
+        </form>
+        <template wx:if="{{tab === 'overview'}}" is="bulkSelection" data="{{list: stages, listKey: 'stages', selectedCount: selectedStages.length, saving}}" />
+        <view class="fin-choices">
+          <block wx:for="{{stages.items}}" wx:key="id">
+            <button wx:if="{{tab === 'overview'}}" class="fin-choice {{selectedStageKeys[item.id] ? 'fin-choice--active' : ''}}" data-id="{{item.id}}" bindtap="onToggleStage" aria-pressed="{{selectedStageKeys[item.id]}}">
+              <view class="fin-choice-row">
+                <view class="fin-choice-copy"><text>{{item.name}}</text><template is="stageRange" data="{{stage: item}}" /></view>
+                <view class="fin-stage-indicator {{selectedStageKeys[item.id] ? 'fin-stage-indicator--checked' : ''}}">
+                  <image wx:if="{{selectedStageKeys[item.id]}}" src="/images/ui/check.png" mode="aspectFit" aria-hidden="true" />
+                </view>
+              </view>
+            </button>
+            <button wx:else class="fin-choice {{currentStage.id === item.id ? 'fin-choice--active' : ''}}" data-id="{{item.id}}" bindtap="onChooseBillingStage" aria-pressed="{{currentStage.id === item.id}}">
+              <view class="fin-choice-row">
+                <view class="fin-choice-copy"><text>{{item.name}}</text><template is="stageRange" data="{{stage: item}}" /></view>
+                <image src="{{currentStage.id === item.id ? '/images/ui/check.png' : '/images/ui/next.png'}}" mode="aspectFit" aria-hidden="true" />
+              </view>
+            </button>
+          </block>
+        </view>
+        <template is="listActions" data="{{list: stages, listKey: 'stages', empty: '暂无收费阶段'}}" />
+        <button wx:if="{{tab === 'billing'}}" class="fin-button fin-button--outline fin-picker-create" bindtap="onNewStage">
+          <image src="/images/ui/add.png" mode="aspectFit" aria-hidden="true" /><text>新建收费阶段</text>
+        </button>
+      </view>
+    </view>
+
+    <block wx:if="{{tab === 'overview'}}">
+      <view wx:if="{{overviewLoading || overviewError || !overview}}" class="fin-card fin-empty fin-list-status">
+        <text aria-live="polite">{{overviewLoading ? '正在统计已选阶段' : (overviewError || '选择收费阶段后查看统计')}}</text>
+        <button wx:if="{{overviewError}}" class="fin-button fin-button--soft" bindtap="loadOverview">重试</button>
+        <button wx:elif="{{!overviewLoading && !stagePickerOpen}}" class="fin-button fin-button--soft" bindtap="toggleStagePicker">选择阶段</button>
+      </view>
+
+      <block wx:else>
+        <view class="fin-summary">
+          <view class="fin-section-head fin-section-title">
+            <text class="fin-heading" aria-role="heading">财务汇总</text>
+            <button class="fin-button fin-button--outline" data-kind="overview" bindtap="exportWorkbook" loading="{{exporting}}" disabled="{{exporting}}"><text>导出 Excel</text></button>
+          </view>
+          <template is="financeSummary" data="{{summary: overview.summary}}" />
+        </view>
+
+        <view class="fin-card fin-chart-card">
+          <text class="fin-heading" aria-role="heading">应收构成</text>
+          <view class="fin-chart-legend">
+            <text class="fin-legend fin-legend--net">净实收</text><text class="fin-legend fin-legend--balance">未收</text>
+          </view>
+          <view wx:for="{{overview.charts.composition}}" wx:key="id" class="fin-chart-row">
+            <view class="fin-chart-title"><text>{{item.name}}</text><text class="fin-chart-value">{{item.due}}</text></view>
+            <view class="fin-chart-track" aria-hidden="true">
+              <view class="fin-fill fin-fill--net" style="width: {{item.netWidth}}%"></view>
+              <view class="fin-fill fin-fill--balance" style="width: {{item.balanceWidth}}%"></view>
+            </view>
+            <view class="fin-chart-caption">
+              <text class="fin-text-net">净实收 {{item.net}}</text><text class="fin-text-balance">未收 {{item.balance}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="fin-compare-grid">
+          <view wx:for="{{overview.charts.comparisons}}" wx:for-item="chart" wx:key="key" class="fin-card fin-chart-card">
+            <text class="fin-heading" aria-role="heading">{{chart.title}}</text>
+            <view wx:for="{{chart.rows}}" wx:for-item="row" wx:key="id" class="fin-chart-row">
+              <view class="fin-chart-title"><text>{{row.name}}</text><text class="fin-chart-value">{{row.value}}</text></view>
+              <view class="fin-chart-track" aria-hidden="true"><view class="fin-fill fin-fill--{{chart.key}}" style="width: {{row.width}}%"></view></view>
+            </view>
+          </view>
+        </view>
+
+        <view class="fin-detail-section">
+          <view class="fin-section-head fin-section-title"><text class="fin-heading" aria-role="heading">阶段明细</text></view>
+          <view class="fin-bill-grid">
+            <view wx:for="{{overview.stages}}" wx:for-item="stage" wx:key="id" class="fin-card fin-report-row">
+              <view class="fin-section-head fin-report-head">
+                <view class="fin-title-group"><text class="fin-item-name">{{stage.name}}</text><template is="stageRange" data="{{stage: stage}}" /></view>
+                <text class="fin-chip">收款率 {{stage.rate}}</text>
+              </view>
+              <template is="figures" data="{{metrics: stage.metrics}}" />
+            </view>
+          </view>
+        </view>
+      </block>
+    </block>
+
+    <block wx:else>
+      <block wx:if="{{currentStage}}">
+        <view class="fin-summary">
+          <template wx:if="{{bills.summary}}" is="financeSummary" data="{{summary: bills.summary}}" />
+        </view>
+
+        <view class="fin-work">
+          <button class="fin-work-primary" bindtap="onBatch">
+            <view class="fin-work-primary-row">
+              <view class="fin-work-primary-icon"><image src="/images/ui/add.png" mode="aspectFit" aria-hidden="true" /></view>
+              <text>批量建账</text>
+              <view class="fin-work-primary-arrow"><image src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" /></view>
+            </view>
+          </button>
+          <view class="fin-quick-grid">
+            <view class="fin-quick-cell">
+              <button class="fin-quick" bindtap="onStudentLookup"><image src="/images/ui/people.png" mode="aspectFit" aria-hidden="true" /><text>缴费记录</text></button>
+            </view>
+            <view class="fin-quick-cell">
+              <button class="fin-quick" data-kind="stage" bindtap="exportWorkbook" disabled="{{exporting}}" aria-busy="{{exporting}}"><image src="/images/ui/document.png" mode="aspectFit" aria-hidden="true" /><text>{{exporting ? '正在导出' : '导出 Excel'}}</text></button>
+            </view>
+            <view class="fin-quick-cell">
+              <button class="fin-quick" bindtap="toggleStageSettings" aria-expanded="{{stageSettings}}" disabled="{{saving}}"><image src="/images/ui/edit.png" mode="aspectFit" aria-hidden="true" /><text>{{stageSettings ? '收起设置' : '阶段设置'}}</text></button>
+            </view>
+          </view>
+          <view wx:if="{{stageSettings}}" class="fin-stage-form">
+            <form bindsubmit="updateStage">
+              <view class="fin-stage-form-body">
+                <template is="stageFields" data="{{form: stageDraft, prefix: 'stageDraft', saving}}" />
+                <text wx:if="{{stageError}}" class="fin-error" aria-live="polite">{{stageError}}</text>
+                <button class="fin-button fin-button--primary" form-type="submit" disabled="{{saving}}" loading="{{saving}}"><text>保存阶段设置</text></button>
+              </view>
+            </form>
+          </view>
+        </view>
+
+        <view class="fin-bill-section">
+          <view class="fin-section-head fin-section-title">
+            <view class="fin-title-group">
+              <text class="fin-heading" aria-role="heading">阶段账单</text>
+              <text wx:if="{{bills.page > 0}}" class="fin-muted">{{bills.total}} 笔</text>
+            </view>
+            <picker mode="selector" range="{{statuses}}" range-key="label" value="{{statusIndex}}" bindchange="onStatus" aria-label="筛选缴费状态">
+              <view class="fin-filter">{{statuses[statusIndex].label}}<image src="/images/ui/expand.png" mode="aspectFit" aria-hidden="true" /></view>
+            </picker>
+          </view>
+          <form bindsubmit="onSearchBills">
+            <view class="fin-toolbar">
+              <view class="fin-search">
+                <image src="/images/ui/search.png" mode="aspectFit" aria-hidden="true" />
+                <input class="fin-search-input" value="{{billSearch}}" data-field="billSearch" bindinput="onText" maxlength="60" placeholder="搜索学生姓名" aria-label="搜索账单学生" confirm-type="search" bindconfirm="onSearchBills" />
+              </view>
+              <view class="fin-query-action"><button class="fin-button fin-button--soft" form-type="submit"><text>查询</text></button></view>
+            </view>
+          </form>
+          <view class="fin-bill-grid">
+            <view wx:for="{{bills.items}}" wx:key="id" class="fin-card fin-bill">
+              <view class="fin-bill-header">
+                <text class="fin-bill-avatar" aria-hidden="true">{{item.initial}}</text>
+                <view class="fin-title-group"><text class="fin-item-name">{{item.studentName}}</text><text wx:if="{{item.meta}}" class="fin-muted">{{item.meta}}</text></view>
+                <text class="fin-chip fin-chip--{{item.status}}">{{item.statusLabel}}</text>
+              </view>
+              <template is="figures" data="{{metrics: item.figures, compact: true}}" />
+              <view class="fin-bill-actions">
+                <view class="fin-bill-action"><button class="fin-button fin-button--soft" data-id="{{item.id}}" bindtap="onBill"><text>账单流水</text></button></view>
+                <view class="fin-bill-action"><button class="fin-button fin-button--outline" data-id="{{item.studentId}}" bindtap="onHistory"><text>缴费记录</text></button></view>
+                <view class="fin-bill-action fin-bill-action--remove"><button class="fin-button fin-button--subtle" data-id="{{item.id}}" bindtap="onRemove" aria-label="移除{{item.studentName}}的账单"><text>移除</text></button></view>
+              </view>
+            </view>
+          </view>
+          <template is="listActions" data="{{list: bills, listKey: 'bills', empty: '没有符合条件的账单'}}" />
+        </view>
+      </block>
+
+      <view wx:elif="{{!stages.loading}}" class="fin-card fin-empty">
+        <text class="fin-heading" aria-role="heading">{{stages.error ? '阶段加载失败' : '暂无收费阶段'}}</text>
+        <text class="fin-muted">{{stages.error || '创建阶段后即可为学生建账。'}}</text>
+        <view class="fin-empty-actions">
+          <button wx:if="{{stages.error}}" class="fin-button fin-button--primary" bindtap="onSearchStages">重新加载</button>
+          <button wx:else class="fin-button fin-button--primary" bindtap="onNewStage">新建收费阶段</button>
+          <button class="fin-button fin-button--outline" bindtap="onStudentLookup">缴费记录</button>
+        </view>
+      </view>
+    </block>
+  </block>
+</view>
+
+<view wx:if="{{authorized && panel}}" class="fin-mask">
+  <view class="fin-backdrop" catchtap="closePanel" catchtouchmove="stopTouch"></view>
+  <view class="fin-sheet fin-sheet--{{panel}} {{panel === 'event' && eventDraft.type === 'reversal' ? 'fin-sheet--reversal' : ''}}"
+    aria-role="dialog" aria-label="{{panelTitle}}">
+    <view class="fin-sheet-header">
+      <view class="fin-sheet-heading">
+        <text class="fin-sheet-title" aria-role="heading">{{panelTitle}}</text>
+        <text wx:if="{{activeBill}}" class="fin-sheet-context">{{activeBill.studentName}} · {{activeBill.stageName}}</text>
+        <text wx:elif="{{panel === 'history' && history.student}}" class="fin-sheet-context">{{history.student.name}}</text>
+        <text wx:elif="{{panel === 'batch'}}" class="fin-sheet-context">{{currentStage.name}} · 已选 {{batchItems.length}} 人</text>
+      </view>
+      <view class="fin-sheet-close-slot">
+        <button class="fin-sheet-close" bindtap="closePanel" aria-label="关闭或返回上一级" disabled="{{saving || picking}}">
+          <view class="fin-sheet-button-inner"><image src="/images/ui/close.png" mode="aspectFit" aria-hidden="true" /></view>
+        </button>
+      </view>
+    </view>
+
+    <scroll-view wx:for="{{[panel]}}" wx:for-item="sheetPanel" wx:key="*this" class="fin-sheet-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+      <view class="fin-sheet-content">
+        <template wx:if="{{sheetPanel === 'create'}}" is="stageFields" data="{{form: stageNew, prefix: 'stageNew', saving}}" />
+
+        <block wx:elif="{{sheetPanel === 'batch' || sheetPanel === 'student'}}">
+          <form class="fin-sheet-search" bindsubmit="onSearchCandidates">
+            <view class="fin-sheet-search-row">
+              <view class="fin-sheet-search-field">
+                <image src="/images/ui/search.png" mode="aspectFit" aria-hidden="true" />
+                <view class="fin-form-native">
+                  <input class="fin-form-native-input" value="{{candidateSearch}}" data-field="candidateSearch" bindinput="onText" maxlength="60"
+                    confirm-type="search" bindconfirm="onSearchCandidates" cursor-spacing="{{88}}" placeholder="姓名、学校或年级"
+                    aria-label="搜索学生" disabled="{{saving}}" />
+                </view>
+              </view>
+              <view class="fin-sheet-search-slot">
+                <button class="fin-button fin-button--soft" form-type="submit" disabled="{{saving}}">
+                  <view class="fin-sheet-button-inner">搜索</view>
+                </button>
+              </view>
+            </view>
+          </form>
+          <template wx:if="{{sheetPanel === 'batch'}}" is="bulkSelection" data="{{list: candidates, listKey: 'candidates', selectedCount: batchItems.length, saving}}" />
+          <view wx:if="{{batchItems.length}}" class="fin-sheet-selection">
+            <text class="fin-sheet-section-title">已选学生应收金额</text>
+            <view wx:for="{{batchItems}}" wx:key="id" class="fin-sheet-selection-row">
+              <text class="fin-sheet-record-title">{{item.name}}</text>
+              <view class="fin-form-money fin-form-money--compact">
+                <text aria-hidden="true">¥</text>
+                <view class="fin-form-native">
+                  <input class="fin-form-native-input" type="digit" value="{{item.due}}" placeholder="金额" maxlength="17" cursor-spacing="{{88}}"
+                    data-id="{{item.id}}" bindinput="onBatchAmount" aria-label="{{item.name}}应收金额（元）" disabled="{{saving}}" />
+                </view>
+              </view>
+              <view class="fin-sheet-selection-remove">
+                <button class="fin-sheet-link fin-sheet-link--danger" bindtap="onStudentSelect" data-id="{{item.id}}"
+                  disabled="{{saving}}" aria-label="移除{{item.name}}"><view class="fin-sheet-button-inner">移除</view></button>
+              </view>
+            </view>
+          </view>
+          <view class="fin-sheet-candidates">
+            <button wx:for="{{candidates.items}}" wx:key="id"
+              class="fin-sheet-candidate {{batchKeys[item.id] ? 'fin-sheet-candidate--selected' : ''}}"
+              data-id="{{item.id}}" bindtap="onStudentSelect" disabled="{{saving}}">
+              <view class="fin-sheet-candidate-inner">
+                <view class="fin-sheet-record-heading">
+                  <text class="fin-sheet-record-title">{{item.name}}</text>
+                  <text wx:if="{{item.school || item.grade}}" class="fin-sheet-caption">{{item.school}} {{item.grade}}</text>
+                </view>
+                <image wx:if="{{sheetPanel === 'student' || batchKeys[item.id]}}" class="fin-sheet-candidate-icon"
+                  src="{{sheetPanel === 'student' ? '/images/ui/next.png' : '/images/ui/check.png'}}" mode="aspectFit" aria-hidden="true" />
+                <view wx:else class="fin-sheet-candidate-box" aria-hidden="true"></view>
+              </view>
+            </button>
+          </view>
+          <template is="listActions" data="{{list: candidates, listKey: 'candidates', empty: '没有符合条件的学生'}}" />
+        </block>
+
+        <block wx:elif="{{sheetPanel === 'history'}}">
+          <view class="fin-sheet-history">
+            <view wx:for="{{history.items}}" wx:key="id" class="fin-sheet-history-record">
+              <view class="fin-sheet-record-header">
+                <text class="fin-sheet-record-title">{{item.stageName}}</text>
+                <text class="fin-chip fin-chip--{{item.removed ? 'removed' : item.status}}">{{item.statusLabel}}</text>
+              </view>
+              <template is="figures" data="{{metrics: item.figures, compact: true}}" />
+              <button class="fin-sheet-link fin-sheet-link--forward" data-id="{{item.id}}" bindtap="onBill">
+                <view class="fin-sheet-button-inner"><text>查看账单流水</text><image src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" /></view>
+              </button>
+            </view>
+          </view>
+          <template is="listActions" data="{{list: history, listKey: 'history', empty: '该学生暂无账单'}}" />
+        </block>
+
+        <block wx:elif="{{sheetPanel === 'bill'}}">
+          <view class="fin-ledger-summary">
+            <view class="fin-sheet-record-header">
+              <text class="fin-sheet-section-title">账单金额</text>
+              <text class="fin-chip fin-chip--{{activeBill.removed ? 'removed' : activeBill.status}}">{{activeBill.statusLabel}}</text>
+            </view>
+            <template is="figures" data="{{metrics: activeBill.figures, compact: true}}" />
+            <block wx:if="{{!activeBill.removed}}">
+              <view class="fin-ledger-money-actions">
+                <view class="fin-ledger-money-slot">
+                  <button class="fin-button fin-button--primary" data-type="payment" bindtap="onEvent"
+                    disabled="{{activeBill.balance <= 0 || events.loading}}"><view class="fin-sheet-button-inner">登记收款</view></button>
+                </view>
+                <view class="fin-ledger-money-slot">
+                  <button class="fin-button fin-button--soft" data-type="refund" bindtap="onEvent"
+                    disabled="{{activeBill.net <= 0 || events.loading}}"><view class="fin-sheet-button-inner">登记退款</view></button>
+                </view>
+              </view>
+              <view class="fin-ledger-actions">
+                <view><button class="fin-sheet-link" bindtap="onDue" disabled="{{events.loading}}"><view class="fin-sheet-button-inner">调整应收</view></button></view>
+                <view><button class="fin-sheet-link fin-sheet-link--danger" bindtap="onRemove" disabled="{{events.loading}}"><view class="fin-sheet-button-inner">移除账单</view></button></view>
+              </view>
+            </block>
+          </view>
+          <view class="fin-ledger-log">
+            <text class="fin-sheet-section-title" aria-role="heading">流水记录</text>
+            <view class="fin-ledger-entries">
+              <view wx:for="{{events.items}}" wx:key="id" class="fin-ledger-entry">
+                <view class="fin-sheet-record-header">
+                  <text class="fin-sheet-record-title">{{item.label}}</text>
+                  <text wx:if="{{item.amountLabel}}" class="fin-ledger-amount {{item.type === 'payment' ? 'fin-ledger-amount--paid' : ''}}">{{item.amountLabel}}</text>
+                </view>
+                <text wx:if="{{item.meta}}" class="fin-sheet-caption">{{item.meta}}</text>
+                <text wx:if="{{item.discountLabel}}" class="fin-ledger-discount">{{item.discountLabel}}</text>
+                <text wx:if="{{item.dueLabel}}" class="fin-sheet-caption">{{item.dueLabel}}</text>
+                <text wx:if="{{item.note}}" class="fin-ledger-note" selectable>{{item.note}}</text>
+                <view wx:if="{{item.photos.length || item.reversed || (item.reversible && !activeBill.removed)}}" class="fin-ledger-actions">
+                  <view wx:if="{{item.photos.length}}">
+                    <button class="fin-sheet-link" data-id="{{item.id}}" bindtap="viewRecordedProofs"
+                      loading="{{proofLoading === item.id}}" disabled="{{proofLoading}}" aria-expanded="{{recordedProofs[item.id] ? true : false}}">
+                      <view class="fin-sheet-button-inner">{{recordedProofs[item.id] ? '收起凭证' : '查看 ' + item.photos.length + ' 张凭证'}}</view>
+                    </button>
+                  </view>
+                  <text wx:if="{{item.reversed}}" class="fin-chip fin-ledger-reversed">已撤销</text>
+                  <view wx:elif="{{item.reversible && !activeBill.removed}}">
+                    <button class="fin-sheet-link fin-sheet-link--danger" data-id="{{item.id}}" data-type="reversal" bindtap="onEvent">
+                      <view class="fin-sheet-button-inner">撤销登记</view>
+                    </button>
+                  </view>
+                </view>
+                <view wx:if="{{recordedProofs[item.id]}}" class="fin-form-proof-slot">
+                  <mmw-photos items="{{recordedProofs[item.id]}}" retryable data-id="{{item.id}}" bind:preview="previewRecordedProof" />
+                </view>
+              </view>
+            </view>
+            <template is="listActions" data="{{list: events, listKey: 'events', empty: '暂无账单流水'}}" />
+          </view>
+        </block>
+
+        <view wx:elif="{{sheetPanel === 'due'}}" class="fin-form">
+          <view class="fin-form-field">
+            <label for="finance-due-amount">新应收金额</label>
+            <view class="fin-form-money">
+              <text aria-hidden="true">¥</text>
+              <view class="fin-form-native">
+                <input class="fin-form-native-input" id="finance-due-amount" type="digit" value="{{dueForm.due}}" data-field="dueForm.due"
+                  maxlength="17" cursor-spacing="{{88}}" bindinput="onText" disabled="{{saving}}" aria-label="新应收金额（元）" />
+              </view>
+            </view>
+          </view>
+          <view class="fin-form-field">
+            <label for="finance-due-note">调整原因</label>
+            <textarea class="fin-form-textarea" id="finance-due-note" value="{{dueForm.note}}" data-field="dueForm.note" bindinput="onText"
+              maxlength="500" placeholder="填写调整原因" cursor-spacing="{{88}}" aria-label="调整原因" disabled="{{saving}}" />
+          </view>
+        </view>
+
+        <view wx:elif="{{sheetPanel === 'event'}}" class="fin-form">
+          <view wx:if="{{eventDraft.type === 'reversal'}}" class="fin-sheet-notice">
+            <text class="fin-sheet-record-title">撤销{{eventTarget.label}}登记 {{eventTarget.amountLabel}}</text>
+            <text>确认后会重新计算账单余额，并保留原流水。实际退款需要另行处理。{{eventTarget.discount > 0 ? '原流水的优惠也会撤销。' : ''}}</text>
+          </view>
+          <view wx:else class="fin-form-field">
+            <label for="finance-event-amount">{{eventDraft.type === 'payment' ? '收款金额' : '退款金额'}}</label>
+            <view class="fin-form-money fin-form-money--prominent">
+              <text aria-hidden="true">¥</text>
+              <view class="fin-form-native">
+                <input class="fin-form-native-input" id="finance-event-amount" type="digit" value="{{eventDraft.amount}}"
+                  data-field="eventDraft.amount" maxlength="17" cursor-spacing="{{88}}" placeholder="0.00" bindinput="onText" disabled="{{saving}}"
+                  aria-label="{{eventDraft.type === 'payment' ? '收款金额（元）' : '退款金额（元）'}}" />
+              </view>
+            </view>
+          </view>
+
+          <view wx:if="{{eventDraft.type === 'payment'}}" class="fin-form-payment">
+            <view class="fin-sheet-record-header">
+              <text class="fin-sheet-record-title">全部收款</text>
+              <view class="fin-form-switch-slot">
+                <switch class="fin-form-switch" checked="{{eventDraft.fullPayment}}" bindchange="onFullPayment" disabled="{{saving}}" color="#205a40" aria-label="全部收款" />
+              </view>
+            </view>
+            <text class="fin-sheet-caption" aria-live="polite">{{paymentHint}}</text>
+          </view>
+
+          <view class="fin-form-split {{eventDraft.type === 'reversal' ? 'fin-form-split--single' : ''}}">
+            <view class="fin-form-field">
+              <text>{{eventDraft.type === 'reversal' ? '撤销日期' : '登记日期'}}</text>
+              <mmw-date-picker class="fin-form-picker" value="{{eventDraft.date}}" data-field="eventDraft.date" bind:change="onDate" disabled="{{saving}}"
+                label="{{eventDraft.type === 'reversal' ? '撤销日期' : '登记日期'}}">
+                <view class="fin-form-option">
+                  <text>{{eventDraft.date}}</text>
+                  <image class="fin-form-icon" src="/images/ui/calendar.png" mode="aspectFit" aria-hidden="true" />
+                </view>
+              </mmw-date-picker>
+            </view>
+            <view wx:if="{{eventDraft.type !== 'reversal'}}" class="fin-form-field">
+              <text>{{eventDraft.type === 'refund' ? '退款方式' : '收款方式'}}</text>
+              <picker class="fin-form-picker" mode="selector" range="{{paymentMethods}}" value="{{eventDraft.methodIndex}}" bindchange="onMethod" disabled="{{saving}}"
+                aria-label="{{eventDraft.type === 'refund' ? '退款方式' : '收款方式'}}">
+                <view class="fin-form-option">
+                  <text>{{paymentMethods[eventDraft.methodIndex]}}</text>
+                  <image class="fin-form-icon" src="/images/ui/expand.png" mode="aspectFit" aria-hidden="true" />
+                </view>
+              </picker>
+            </view>
+          </view>
+
+          <view class="fin-form-field">
+            <label class="fin-form-label" for="finance-event-note">
+              <text>{{eventDraft.type === 'reversal' ? '撤销原因' : '备注'}}</text>
+              <text wx:if="{{eventDraft.type !== 'reversal'}}" class="fin-form-optional">选填</text>
+            </label>
+            <textarea class="fin-form-textarea" id="finance-event-note" value="{{eventDraft.note}}" data-field="eventDraft.note" bindinput="onText"
+              maxlength="500" placeholder="填写说明" cursor-spacing="{{88}}" disabled="{{saving}}" aria-label="{{eventDraft.type === 'reversal' ? '撤销原因' : '备注'}}" />
+          </view>
+
+          <view wx:if="{{eventDraft.type !== 'reversal'}}" class="fin-form-field">
+            <view class="fin-sheet-record-header">
+              <view class="fin-form-label"><text>{{eventDraft.type === 'refund' ? '退款凭证' : '付款凭证'}}</text><text class="fin-form-optional">选填</text></view>
+              <text class="fin-sheet-caption">{{proofItems.length}} / {{proofLimit}}</text>
+            </view>
+            <view class="fin-form-proof-slot">
+              <mmw-photos items="{{proofItems}}" editable limit="{{proofLimit}}" disabled="{{saving || picking}}"
+                bind:add="chooseProofs" bind:remove="removeProof" bind:preview="previewDraftProof" />
+            </view>
+          </view>
+        </view>
+
+        <view wx:elif="{{sheetPanel === 'remove'}}" class="fin-sheet-notice">
+          <text class="fin-sheet-record-title">{{activeBill.net !== 0 ? '这张账单暂时无法移除' : '确认从本阶段移除账单？'}}</text>
+          <text wx:if="{{activeBill.net !== 0}}">账单仍有净实收。登记实际退款或撤销误登的流水后，净实收归零即可移除。</text>
+          <text wx:else>历史账单和流水仍可在学生缴费记录中查看。</text>
+        </view>
+      </view>
+    </scroll-view>
+
+    <view wx:if="{{panel === 'create' || panel === 'batch' || panel === 'due' || panel === 'event' || panel === 'remove'}}" class="fin-sheet-footer">
+      <text wx:if="{{formError}}" class="fin-sheet-error" aria-live="polite">{{formError}}</text>
+      <view class="fin-sheet-submit">
+        <button wx:if="{{panel === 'create'}}" class="fin-button fin-button--primary" bindtap="saveNewStage"
+          disabled="{{saving}}" loading="{{saving}}"><view class="fin-sheet-button-inner">创建阶段</view></button>
+        <button wx:elif="{{panel === 'batch'}}" class="fin-button fin-button--primary" bindtap="saveBatch"
+          disabled="{{saving || !batchItems.length}}" loading="{{saving}}">
+          <view class="fin-sheet-button-inner">创建 {{batchItems.length}} 张账单</view>
+        </button>
+        <button wx:elif="{{panel === 'due'}}" class="fin-button fin-button--primary" bindtap="saveDue"
+          disabled="{{saving}}" loading="{{saving}}"><view class="fin-sheet-button-inner">保存调整</view></button>
+        <button wx:elif="{{panel === 'event'}}" class="fin-button {{eventDraft.type === 'reversal' ? 'fin-button--danger' : 'fin-button--primary'}}"
+          bindtap="saveEvent" disabled="{{saving || picking}}" loading="{{saving}}">
+          <view class="fin-sheet-button-inner">{{eventDraft.type === 'reversal' ? '确认撤销登记' : eventDraft.type === 'payment' ? '保存收款' : '保存退款'}}</view>
+        </button>
+        <button wx:else class="fin-button fin-button--danger" bindtap="removeBill"
+          disabled="{{saving || activeBill.net !== 0}}" loading="{{saving}}"><view class="fin-sheet-button-inner">确认移除账单</view></button>
+      </view>
+    </view>
+  </view>
+</view>

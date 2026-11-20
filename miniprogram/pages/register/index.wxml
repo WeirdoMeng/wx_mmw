@@ -1,0 +1,87 @@
+<view class="auth-page register-page">
+  <view class="auth-cover register-cover">
+    <text wx:if="{{organizationName}}" class="auth-brand">{{organizationName}}</text>
+    <view class="auth-cover-title">{{type === 'teacher' ? '教师登记' : (type === 'parent' ? '孩子登记' : '加入托管机构')}}</view>
+    <view class="register-cover-icon"><image src="{{type === 'parent' ? '/images/ui/child.png' : '/images/ui/profile.png'}}" mode="aspectFit" aria-hidden="true" /></view>
+  </view>
+  <view class="auth-card register-card">
+    <view wx:if="{{loading}}" class="mmw-muted" aria-live="polite">正在核对机构二维码</view>
+    <block wx:elif="{{submitted}}">
+      <view class="auth-subtitle" aria-live="polite">登记已提交</view>
+      <view class="mmw-muted auth-copy">机构审核通过后，重新打开小程序即可进入。</view>
+      <button class="mmw-button mmw-button--primary auth-action" bindtap="goEntry">返回</button>
+    </block>
+    <form wx:elif="{{ready}}" class="register-form" bindsubmit="submit">
+      <block wx:if="{{type === 'teacher'}}">
+        <label class="auth-field">
+          <text class="auth-label">教师姓名</text>
+          <input class="auth-input" name="name" placeholder-class="auth-placeholder" placeholder="请输入姓名" maxlength="30" aria-label="教师姓名" disabled="{{saving}}" />
+        </label>
+        <label class="auth-field">
+          <text class="auth-label">联系电话</text>
+          <input class="auth-input" name="phone" type="number" placeholder-class="auth-placeholder" placeholder="请输入 11 位手机号" maxlength="24" aria-label="联系电话" disabled="{{saving}}" />
+        </label>
+        <text class="mmw-muted">机构通过审核后，用当前微信可直接进入教师端。</text>
+      </block>
+      <block wx:else>
+        <view class="register-section" aria-label="孩子资料">
+          <view class="register-section-title">孩子资料</view>
+          <label class="auth-field">
+            <text class="auth-label">孩子姓名</text>
+            <input class="auth-input" name="name" placeholder-class="auth-placeholder" placeholder="请输入孩子姓名" maxlength="30" aria-label="孩子姓名" disabled="{{saving}}" />
+          </label>
+          <view class="auth-row">
+            <label class="auth-field">
+              <text class="auth-label">年龄</text>
+              <input class="auth-input" name="age" type="number" placeholder-class="auth-placeholder" placeholder="请输入年龄" maxlength="3" aria-label="年龄" disabled="{{saving}}" />
+            </label>
+            <view class="auth-field">
+              <text class="auth-label">年级</text>
+              <picker class="register-picker" mode="selector" range="{{grades}}" value="{{gradeIndex}}" disabled="{{saving}}" bindchange="onGradeChange" aria-label="选择年级">
+                <view class="auth-input register-select">
+                  <text class="{{gradeIndex === 0 ? 'auth-placeholder' : ''}}">{{grades[gradeIndex]}}</text>
+                  <image src="/images/ui/expand.png" mode="aspectFit" aria-hidden="true" />
+                </view>
+              </picker>
+            </view>
+          </view>
+          <label class="auth-field">
+            <text class="auth-label">学校</text>
+            <input class="auth-input" name="school" placeholder-class="auth-placeholder" placeholder="请输入学校名称" maxlength="60" aria-label="学校" disabled="{{saving}}" />
+          </label>
+        </view>
+        <view class="register-section" aria-label="家长联系">
+          <view class="register-section-title">家长联系</view>
+          <label class="auth-field">
+            <text class="auth-label">家长姓名</text>
+            <input class="auth-input" name="guardianName" placeholder-class="auth-placeholder" placeholder="输入家长姓名" maxlength="30" aria-label="家长姓名，必填" disabled="{{saving}}" />
+          </label>
+          <label class="auth-field">
+            <text class="auth-label">与孩子关系</text>
+            <input class="auth-input" name="relationship" placeholder-class="auth-placeholder" placeholder="例如妈妈、爸爸、爷爷" maxlength="20" aria-label="与孩子关系，必填" disabled="{{saving}}" />
+          </label>
+          <label class="auth-field">
+            <text class="auth-label">家长联系电话 1</text>
+            <input class="auth-input" name="contact1" type="number" placeholder-class="auth-placeholder" placeholder="请输入 11 位手机号" maxlength="24" aria-label="家长联系电话 1" disabled="{{saving}}" />
+          </label>
+          <label class="auth-field">
+            <text class="auth-label">家长联系电话 2 <text class="auth-opt">选填</text></text>
+            <input class="auth-input" name="contact2" type="number" placeholder-class="auth-placeholder" placeholder="请输入备用手机号" maxlength="24" aria-label="家长联系电话 2" disabled="{{saving}}" />
+          </label>
+        </view>
+        <view class="auth-consent">
+          <checkbox-group class="auth-consent-choice" name="guardianConsent">
+            <label><checkbox value="agree" color="#205A40" disabled="{{saving}}" /><text>我是孩子的监护人，已阅读并同意</text></label>
+          </checkbox-group>
+          <button class="auth-link" bindtap="showPrivacy">《隐私保护指引》</button>
+        </view>
+      </block>
+      <view wx:if="{{error}}" class="auth-error" aria-live="polite">{{error}}</view>
+      <button class="mmw-button mmw-button--primary auth-action" form-type="submit" loading="{{saving}}" disabled="{{saving}}" hover-class="mmw-button--pressed">提交登记</button>
+    </form>
+    <block wx:else>
+      <view class="auth-error" aria-live="polite">{{error}}</view>
+      <button class="mmw-button mmw-button--white auth-action" bindtap="goEntry">返回</button>
+    </block>
+  </view>
+</view>

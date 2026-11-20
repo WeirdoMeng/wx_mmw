@@ -1,0 +1,147 @@
+@import "../index/auth.wxss";
+
+.register-page .auth-cover {
+  min-height: 208rpx;
+  gap: 13rpx;
+  color: var(--ink);
+  background: linear-gradient(128deg, #eef4d8 0%, #d9e9c8 56%, #e6eed6 100%);
+}
+
+.register-cover::before,
+.register-cover::after {
+  border-color: rgba(43, 103, 65, .18);
+}
+
+.register-cover .auth-brand {
+  color: var(--accent-dark);
+}
+
+.register-cover .auth-cover-title {
+  max-width: 74%;
+}
+
+.register-cover-icon {
+  position: absolute;
+  top: 50%;
+  right: 29rpx;
+  display: grid;
+  place-items: center;
+  width: 106rpx;
+  height: 106rpx;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 5rpx 18rpx rgba(18, 61, 48, .09);
+  transform: translateY(-50%);
+}
+
+.register-cover-icon image {
+  width: 51rpx;
+  height: 51rpx;
+}
+
+.register-card {
+  margin-inline: 7rpx;
+  padding-top: 30rpx;
+}
+
+.register-card .auth-action {
+  margin-top: 26rpx;
+}
+
+.register-card > .auth-action {
+  margin-top: 22rpx;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.register-section + .register-section {
+  margin-top: 30rpx;
+  padding-top: 26rpx;
+  border-top: 1rpx solid var(--line);
+}
+
+.register-section-title {
+  margin-bottom: 22rpx;
+  color: var(--ink);
+  font-size: 31rpx;
+  font-weight: 760;
+}
+
+.register-section > .auth-field + .auth-field,
+.register-section > .auth-row,
+.register-section > .auth-row + .auth-field,
+.register-form > .auth-field + .auth-field {
+  margin-top: 22rpx;
+}
+
+.register-form > .mmw-muted {
+  margin-top: 20rpx;
+}
+
+.register-form .auth-label {
+  display: block;
+  margin-bottom: 10rpx;
+}
+
+.register-form .auth-field {
+  gap: 0;
+}
+
+.register-form .auth-row {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  gap: 18rpx;
+}
+
+.register-form .auth-input {
+  height: 104rpx;
+  min-height: 48px;
+}
+
+.register-picker {
+  display: block;
+  width: 100%;
+}
+
+.register-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 17rpx;
+}
+
+.register-select image {
+  flex: none;
+  width: 24rpx;
+  height: 24rpx;
+  transform: rotate(90deg);
+}
+
+.register-form .auth-consent {
+  margin-top: 26rpx;
+  padding: 9rpx 18rpx;
+  background: var(--tint);
+}
+
+.register-form .auth-consent label {
+  display: flex;
+  align-items: center;
+}
+
+.register-form .auth-consent checkbox {
+  flex: none;
+  margin-right: 9rpx;
+}
+
+.register-form .auth-link {
+  justify-content: flex-start;
+  margin: -5rpx 0 0;
+  padding: 0 0 0 54rpx;
+}
+
+.register-form .auth-error {
+  margin: 20rpx 0 0;
+}

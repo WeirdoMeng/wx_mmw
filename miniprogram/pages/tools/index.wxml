@@ -1,0 +1,39 @@
+<view class="tools-page mmw-safe-bottom" style="padding-top: {{topInset}}px">
+  <view class="tools-shell">
+    <view class="tools-brand" style="height: {{menuHeight}}px; padding-right: {{menuWidth}}px">
+      <image wx:if="{{organizationName}}" src="/images/ui/organization.png" mode="aspectFit" aria-hidden="true" />
+      <text>{{organizationName}}</text>
+    </view>
+    <view class="tools-header">
+      <text class="tools-title" aria-role="heading">实用工具</text>
+      <view class="tools-header-symbol" aria-hidden="true">
+        <image src="/images/ui/toolbox.png" mode="aspectFit" />
+      </view>
+    </view>
+    <page-banner-ad wx:if="{{categories.length}}" placement="tools" />
+
+    <view wx:if="{{loading || error || !categories.length}}" class="tools-status mmw-surface">
+      <text aria-live="polite">{{error || (loading ? '正在加载工具' : '当前没有可用工具')}}</text>
+      <button wx:if="{{error}}" class="mmw-button mmw-button--white tools-retry" bindtap="loadCatalog">重试</button>
+    </view>
+
+    <view class="tools-groups">
+      <view wx:for="{{categories}}" wx:key="id" wx:for-item="category" wx:for-index="categoryIndex" class="tools-group mmw-surface">
+        <text class="tools-group-title" aria-role="heading">{{category.name}}</text>
+        <view class="tools-grid">
+          <button wx:for="{{category.tools}}" wx:key="key" wx:for-item="tool" wx:for-index="toolIndex"
+            class="tools-entry" aria-label="{{tool.name}}" data-key="{{tool.key}}" data-category-id="{{category.id}}"
+            hover-class="tools-entry--pressed" bindtap="onOpenTool">
+            <view class="tools-entry-icon tools-entry-icon--{{tool.iconUrl || tool.localIcon ? 'custom' : tool.tint}}" aria-hidden="true">
+              <image wx:if="{{tool.iconUrl}}" class="tools-uploaded-icon" src="{{tool.iconUrl}}" mode="aspectFit" lazy-load
+                data-category-index="{{categoryIndex}}" data-tool-index="{{toolIndex}}" data-icon-url="{{tool.iconUrl}}" binderror="onIconError" />
+              <image wx:elif="{{tool.localIcon}}" class="tools-uploaded-icon" src="{{tool.localIcon}}" mode="aspectFit" />
+              <image wx:else src="/images/ui/{{tool.icon}}.png" mode="aspectFit" />
+            </view>
+            <text>{{tool.name}}</text>
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

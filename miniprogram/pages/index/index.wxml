@@ -1,0 +1,43 @@
+<view class="join-page">
+  <view class="join-panel">
+    <view class="join-hero">
+      <view class="join-identity">
+        <view class="join-brand">
+          <view class="join-mark"><image src="/images/ui/school.png" mode="aspectFit" aria-hidden="true" /></view>
+          <text>托管中心</text>
+        </view>
+        <view class="join-title">托管登记</view>
+      </view>
+      <view class="join-illustration" aria-hidden="true">
+        <image class="join-art" src="/images/brand/after-school.png" mode="aspectFit" />
+      </view>
+    </view>
+
+    <view class="join-actions">
+      <button class="mmw-button mmw-button--lime join-scan" bindtap="scan" hover-class="mmw-button--pressed"
+        disabled="{{loading}}" loading="{{loading}}"
+        aria-label="{{loading ? '正在连接' : '扫描机构二维码，可使用相机或相册'}}">
+        <view wx:if="{{!loading}}" class="join-scan-icon"><image src="/images/ui/scan-qr.png" mode="aspectFit" aria-hidden="true" /></view>
+        <text>{{loading ? '正在连接' : '扫描机构二维码'}}</text>
+        <image wx:if="{{!loading}}" class="join-scan-arrow" src="/images/ui/next.png" mode="aspectFit" aria-hidden="true" />
+      </button>
+      <button wx:if="{{connectionError && !loading}}" class="join-retry" bindtap="open">重试连接</button>
+    </view>
+  </view>
+
+  <view class="join-services">
+    <view class="join-services-title">托管服务</view>
+    <view class="join-services-list">
+      <view class="join-service">
+        <view class="join-service-icon"><image src="/images/ui/homework.png" mode="aspectFit" aria-hidden="true" /></view>
+        <view class="join-service-name">作业与反馈</view>
+        <text class="join-service-details">提交作业，查看老师反馈</text>
+      </view>
+      <view class="join-service">
+        <view class="join-service-icon join-service-icon--warm"><image src="/images/ui/feed.png" mode="aspectFit" aria-hidden="true" /></view>
+        <view class="join-service-name">托管动态</view>
+        <text class="join-service-details">了解餐食、日常和每周菜谱</text>
+      </view>
+    </view>
+  </view>
+</view>
